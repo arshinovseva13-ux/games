@@ -1,0 +1,4910 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🎮 Игровой зал — веб-версия</title>
+  <style>
+/* Веб-версия «Игрового зала» — тёмная тема в духе Telegram */
+:root {
+  --bg: #0e1621;
+  --bg-2: #17212b;
+  --card: #1c2733;
+  --card-2: #22303d;
+  --line: #2b3a48;
+  --text: #e9eef3;
+  --muted: #8b9bab;
+  --accent: #5288c1;
+  --accent-2: #6ab3f3;
+  --good: #4fae6a;
+  --bad: #e05555;
+  --warn: #e0a33c;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 50% -10%, #1b2b3d 0%, var(--bg) 60%);
+  color: var(--text);
+  font: 15px/1.5 "Segoe UI", Roboto, Ubuntu, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.gw-app {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px 16px 40px;
+}
+
+/* ---------- шапка ---------- */
+.gw-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, var(--card-2), var(--card));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+
+.gw-logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  margin-right: auto;
+}
+
+.gw-logo small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.gw-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- общие элементы ---------- */
+.gw-title { font-size: 19px; font-weight: 700; margin: 0 0 4px; }
+.gw-desc { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+.gw-muted { color: var(--muted); }
+.gw-status { color: var(--muted); font-size: 13px; min-height: 20px; }
+.gw-right { margin-left: auto; }
+
+.gw-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.gw-btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform .06s ease, background .15s ease, border-color .15s ease;
+}
+.gw-btn:hover:not(:disabled) { background: #2b3d4d; border-color: #3b556b; }
+.gw-btn:active:not(:disabled) { transform: translateY(1px); }
+.gw-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.gw-btn.gw-primary {
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  border-color: #3f6f9e;
+  color: #06121d;
+  font-weight: 600;
+}
+.gw-btn.gw-primary:hover:not(:disabled) { filter: brightness(1.07); }
+
+.gw-btn.gw-ghost { background: transparent; }
+.gw-btn.gw-ghost:hover:not(:disabled) { background: rgba(255, 255, 255, .05); }
+
+.gw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(82, 136, 193, .16);
+  border: 1px solid rgba(82, 136, 193, .45);
+  color: var(--accent-2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.gw-badge.gw-badge-good { background: rgba(79, 174, 106, .15); border-color: rgba(79, 174, 106, .45); color: #7fd39a; }
+.gw-badge.gw-badge-bad { background: rgba(224, 85, 85, .15); border-color: rgba(224, 85, 85, .45); color: #f08b8b; }
+
+.gw-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+
+.gw-input, .gw-select {
+  background: #101a24;
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 14px;
+  min-width: 90px;
+}
+.gw-input:focus, .gw-select:focus { outline: 2px solid rgba(106, 179, 243, .45); outline-offset: 1px; }
+
+/* ---------- меню игр ---------- */
+.gw-menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.gw-card {
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  transition: transform .08s ease, border-color .15s ease, background .15s ease;
+}
+.gw-card:hover { border-color: var(--accent); background: var(--card-2); transform: translateY(-1px); }
+.gw-card .gw-card-emoji { font-size: 26px; }
+.gw-card .gw-card-title { font-weight: 700; margin-top: 6px; }
+.gw-card .gw-card-desc { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+
+/* ---------- поля игр ---------- */
+.gw-grid { display: grid; gap: 6px; margin: 10px 0; }
+
+.gw-cell {
+  appearance: none;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 10px 6px;
+  cursor: pointer;
+  min-width: 38px;
+  transition: background .12s ease, border-color .12s ease;
+}
+.gw-cell:hover:not(:disabled) { background: #2b3d4d; }
+.gw-cell:disabled { cursor: default; }
+.gw-cell.gw-fixed { background: #16202b; color: #cfe0ef; cursor: default; }
+.gw-cell.gw-active { border-color: var(--accent-2); box-shadow: 0 0 0 2px rgba(106, 179, 243, .35) inset; }
+.gw-cell.gw-ok { background: rgba(79, 174, 106, .2); border-color: rgba(79, 174, 106, .5); }
+.gw-cell.gw-bad { background: rgba(224, 85, 85, .18); border-color: rgba(224, 85, 85, .55); }
+.gw-cell.gw-used { opacity: .35; }
+
+/* ---------- таблицы ---------- */
+.gw-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.gw-table th, .gw-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.gw-table th { color: var(--muted); font-weight: 600; }
+.gw-table tr:hover td { background: rgba(255, 255, 255, .03); }
+.gw-table .gw-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- тосты ---------- */
+.gw-toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 50;
+}
+.gw-toast {
+  background: #22303d;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+  animation: gw-in .18s ease-out;
+  max-width: 320px;
+  font-size: 14px;
+}
+@keyframes gw-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- правила ---------- */
+.gw-rules { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13.5px; }
+.gw-rules li { margin: 3px 0; }
+
+/* ---------- Память ---------- */
+.gw-mem { grid-template-columns: repeat(4, 1fr); max-width: 360px; }
+.gw-mem .gw-mem-card { font-size: 24px; padding: 14px 6px; }
+.gw-mem .gw-mem-card.gw-mem-open { background: #2b3d4d; border-color: #3b556b; }
+
+/* ---------- 2048 ---------- */
+.gw-2048 { grid-template-columns: repeat(4, 1fr); max-width: 360px; gap: 8px; }
+.gw-2048 .gw-2048-tile { font-size: 22px; font-weight: 700; padding: 16px 6px; text-align: center; border: none; }
+
+/* ---------- Сапёр ---------- */
+.gw-ms { grid-template-columns: repeat(9, 1fr); max-width: 430px; gap: 4px; }
+.gw-ms .gw-ms-cell { font-size: 15px; padding: 8px 0; min-width: 30px; }
+.gw-ms .gw-ms-cell.gw-ms-open { background: #16202b; cursor: default; }
+
+.gw-footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 18px; }
+
+</style>
+</head>
+<body>
+  <div class="gw-app" id="app">
+    <header class="gw-header">
+      <div class="gw-logo">
+        🎮 Игровой зал
+        <small>мини-игры в браузере</small>
+      </div>
+      <div class="gw-nav">
+        <span class="gw-badge" id="gw-balance" title="Баланс">🪙 100</span>
+        <input class="gw-input" id="gw-player" maxlength="20" title="Имя игрока" placeholder="Игрок">
+        <button class="gw-btn gw-ghost" data-nav="menu">🎮 Игры</button>
+        <button class="gw-btn gw-ghost" data-nav="stats">📊 Статистика</button>
+        <button class="gw-btn gw-ghost" data-nav="top">🏆 Топ</button>
+        <button class="gw-btn gw-ghost" data-nav="help">❓ Справка</button>
+      </div>
+    </header>
+
+    <main id="gw-view"></main>
+
+    <p class="gw-footer">
+      Прогресс хранится локально в браузере (localStorage). Обнулить — кнопка в «Статистике».
+    </p>
+  </div>
+
+  <div class="gw-toasts" id="gw-toasts"></div>
+
+  <!-- игры: каждый файл регистрирует себя в window.Games -->
+  <script>
+/* ❌⭕ Крестики-нолики.
+ * Крестики-нолики — мини-игра для «Игрового зала».
+ * Обычный (классический) скрипт: без import/export, без зависимостей,
+ * подключается через <script src="tictactoe.js"><\/script> и работает по file://.
+ */
+(function () {
+  'use strict';
+
+  window.Games = window.Games || {};
+
+  var EMPTY = '.';
+  var EMPTY_CELL = '▫️';
+  var COIN = '🪙';
+  var LINES = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],   // строки
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],   // столбцы
+    [0, 4, 8], [2, 4, 6]               // диагонали
+  ];
+  // Сложность -> вероятность, что бот сыграет случайный (не оптимальный) ход.
+  var LEVELS = {
+    easy: { key: 'easy', label: '😊 Новичок', blunder: 0.35 },
+    normal: { key: 'normal', label: '🙂 Обычный', blunder: 0.12 },
+    hard: { key: 'hard', label: '😈 Невозможный', blunder: 0.0 }
+  };
+  var LEVEL_ORDER = ['easy', 'normal', 'hard'];
+  var MARKS = { X: '❌', O: '⭕' };
+
+  // ------------------------------------------------------------- чистая логика
+  function newBoard() {
+    return [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY];
+  }
+
+  // Вернуть новую доску с поставленной меткой (исходная не мутируется).
+  function place(board, index, mark) {
+    if (index < 0 || index > 8 || board[index] !== EMPTY) return board;
+    var next = board.slice();
+    next[index] = mark;
+    return next;
+  }
+
+  // 'X' | 'O' | 'draw' | null — победитель, ничья или игра идёт.
+  function winner(board) {
+    for (var i = 0; i < LINES.length; i++) {
+      var line = LINES[i];
+      if (board[line[0]] !== EMPTY &&
+          board[line[0]] === board[line[1]] &&
+          board[line[1]] === board[line[2]]) {
+        return board[line[0]];
+      }
+    }
+    for (var j = 0; j < board.length; j++) {
+      if (board[j] === EMPTY) return null;
+    }
+    return 'draw';
+  }
+
+  // Выигрышная тройка клеток для метки или null.
+  function winningLine(board, mark) {
+    for (var i = 0; i < LINES.length; i++) {
+      var line = LINES[i];
+      if (board[line[0]] === mark && board[line[1]] === mark && board[line[2]] === mark) {
+        return line;
+      }
+    }
+    return null;
+  }
+
+  function freeCells(board) {
+    var cells = [];
+    for (var i = 0; i < board.length; i++) {
+      if (board[i] === EMPTY) cells.push(i);
+    }
+    return cells;
+  }
+
+  function opponent(mark) {
+    return mark === 'X' ? 'O' : 'X';
+  }
+
+  /* Идеальный ход по минимаксу с альфа-бета отсечениями. None — ходов нет.
+   * Оценка: победа mark лучше всего, ничья в середине, поражение хуже.
+   * Глубина в оценке заставляет бота выигрывать быстрее и проигрывать позже.
+   */
+  function bestMove(board, mark) {
+    var moves = freeCells(board);
+    if (!moves.length) return null;
+    var bestScore = null;
+    var bestIndex = null;
+    for (var i = 0; i < moves.length; i++) {
+      var index = moves[i];
+      var score = minimax(place(board, index, mark), opponent(mark), mark, 1, -Infinity, Infinity);
+      if (bestScore === null || score > bestScore) {
+        bestScore = score;
+        bestIndex = index;
+      }
+    }
+    return bestIndex;
+  }
+
+  // Оценка позиции с точки зрения me. Ход делает turn.
+  function minimax(board, turn, me, depth, alpha, beta) {
+    var result = winner(board);
+    if (result === 'draw') return 0;
+    if (result !== null) {
+      // me уже победил -> +, соперник победил -> −; раньше = ценнее.
+      return result === me ? (10 - depth) : (depth - 10);
+    }
+
+    var moves = freeCells(board);
+    var value, i, score;
+    if (turn === me) {
+      value = -Infinity;
+      for (i = 0; i < moves.length; i++) {
+        score = minimax(place(board, moves[i], turn), opponent(turn), me, depth + 1, alpha, beta);
+        if (score > value) value = score;
+        if (value > alpha) alpha = value;
+        if (alpha >= beta) break; // отсечение: соперник сюда не пойдёт
+      }
+      return value;
+    }
+    value = Infinity;
+    for (i = 0; i < moves.length; i++) {
+      score = minimax(place(board, moves[i], turn), opponent(turn), me, depth + 1, alpha, beta);
+      if (score < value) value = score;
+      if (value < beta) beta = value;
+      if (alpha >= beta) break; // отсечение
+    }
+    return value;
+  }
+
+  // Ход бота с учётом сложности. Возвращает индекс или null.
+  function chooseMove(board, mark, level) {
+    var empties = freeCells(board);
+    if (!empties.length) return null;
+    var config = LEVELS[level] || LEVELS.hard;
+    if (config.blunder > 0 && Math.random() < config.blunder) {
+      return empties[Math.floor(Math.random() * empties.length)];
+    }
+    return bestMove(board, mark);
+  }
+
+  // Человеческое имя клетки: a1…c3.
+  function boardName(index) {
+    var letters = 'abc';
+    return letters.charAt(index % 3) + String(Math.floor(index / 3) + 1);
+  }
+
+  // ------------------------------------------------------------------ хелперы DOM
+  function elem(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function button(label, className, handler) {
+    var node = elem('button', className || 'gw-btn', label);
+    node.type = 'button';
+    if (typeof handler === 'function') node.addEventListener('click', handler);
+    return node;
+  }
+
+  function row(children) {
+    var box = elem('div', 'gw-row');
+    for (var i = 0; i < children.length; i++) box.appendChild(children[i]);
+    return box;
+  }
+
+  function textPanel(lines, className) {
+    var panel = elem('div', className || 'gw-panel');
+    for (var i = 0; i < lines.length; i++) panel.appendChild(elem('div', null, lines[i]));
+    return panel;
+  }
+
+  // ---------------------------------------------------------------------- игра
+  var GAME = {
+    key: 'tictactoe',
+    emoji: '❌',
+    title: 'Крестики-нолики',
+    description: 'ИИ трёх уровней и режим «на двоих»',
+    rules: 'Поле 3×3, вы играете ❌ и ходите первым.\n' +
+      'Соберите три своих знака в ряд — по горизонтали, вертикали или диагонали.\n' +
+      'Три уровня ИИ: «Новичок» иногда ошибается, «Обычный» ошибается редко, ' +
+      '«Невозможный» не проигрывает никогда.\n' +
+      'Режим «На двоих»: играйте по очереди на одном экране — один за ❌, второй за ⭕.\n' +
+      'Награда за победу над ботом: +15 🪙.',
+    mount: mount
+  };
+
+  function mount(root, api) {
+    if (!root || typeof root.appendChild !== 'function') {
+      return { destroy: function () {} };
+    }
+    api = api || {};
+
+    var view = elem('div', 'gw-panel');
+    root.appendChild(view);
+
+    var destroyed = false;
+    var timer = null;
+    var screen = 'menu';   // 'menu' | 'setup' | 'game'
+    var level = 'hard';    // выбранный уровень для игры с ИИ
+    var state = null;      // текущая партия
+    var rewardGiven = false;
+
+    // ---------------------------------------------------------- мостик к api
+    function toast(text) {
+      if (typeof api.toast === 'function') api.toast(String(text));
+    }
+    function giveReward(payload) {
+      if (typeof api.reward === 'function') api.reward(payload);
+    }
+    function goBack() {
+      if (typeof api.back === 'function') api.back();
+    }
+    function balance() {
+      if (typeof api.balance !== 'function') return 0;
+      try {
+        var value = Number(api.balance());
+        return isFinite(value) ? value : 0;
+      } catch (err) {
+        return 0;
+      }
+    }
+
+    // ---------------------------------------------------------------- рендер
+    function clearView() {
+      view.textContent = '';
+    }
+
+    function renderMenu() {
+      screen = 'menu';
+      state = null;
+      rewardGiven = false;
+      clearView();
+
+      view.appendChild(elem('div', 'gw-title', GAME.emoji + ' ' + GAME.title));
+      view.appendChild(elem('div', 'gw-desc', 'Выберите режим игры.'));
+      view.appendChild(textPanel(GAME.rules.split('\n')));
+
+      view.appendChild(row([button('🤖 Против бота', 'gw-btn gw-primary', function () {
+        screen = 'setup';
+        renderSetup();
+      })]));
+      view.appendChild(row([button('👥 На двоих', 'gw-btn', function () {
+        startSession('duo', level);
+      })]));
+      view.appendChild(row([button('↩ В меню', 'gw-btn gw-ghost', goBack)]));
+    }
+
+    function renderSetup() {
+      screen = 'setup';
+      state = null;
+      clearView();
+
+      view.appendChild(elem('div', 'gw-title', GAME.emoji + ' ' + GAME.title));
+      view.appendChild(elem('div', 'gw-desc', 'Игра против ИИ — выберите уровень сложности:'));
+
+      var select = elem('select', 'gw-select');
+      select.setAttribute('aria-label', 'Уровень сложности');
+      for (var i = 0; i < LEVEL_ORDER.length; i++) {
+        var key = LEVEL_ORDER[i];
+        var option = document.createElement('option');
+        option.value = key;
+        option.textContent = LEVELS[key].label;
+        if (key === level) option.selected = true;
+        select.appendChild(option);
+      }
+      select.addEventListener('change', function () { level = select.value; });
+      view.appendChild(row([select]));
+
+      view.appendChild(row([
+        button('▶️ Начать партию', 'gw-btn gw-primary', function () {
+          startSession('bot', select.value || level);
+        }),
+        button('↩ В меню', 'gw-btn gw-ghost', goBack)
+      ]));
+      view.appendChild(textPanel(['Сложность можно менять и во время партии.'], 'gw-panel'));
+    }
+
+    function startSession(mode, chosenLevel) {
+      if (LEVELS[chosenLevel]) level = chosenLevel;
+      state = {
+        mode: mode,
+        level: mode === 'bot' ? level : 'hard',
+        board: newBoard(),
+        turn: 'X',
+        last: null,
+        result: null,
+        over: false
+      };
+      rewardGiven = false;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      screen = 'game';
+      renderGame();
+    }
+
+    function playerName(mark) {
+      return mark === 'X' ? 'Игрок 1' : 'Игрок 2';
+    }
+
+    function resultText(session) {
+      if (session.result === 'draw') return '🤝 Ничья!';
+      if (session.mode === 'bot') {
+        return session.result === 'X' ? '🏆 Ты победил! 🤯' : '🤖 Бот победил.';
+      }
+      return '🏆 Победил ' + MARKS[session.result] + ' ' + playerName(session.result);
+    }
+
+    function statusLines(session) {
+      var lines = [];
+      if (session.mode === 'duo') {
+        lines.push('❌ Игрок 1   vs   ⭕ Игрок 2');
+        if (session.over) {
+          lines.push(resultText(session));
+        } else {
+          lines.push('Ход: ' + MARKS[session.turn] + ' ' + playerName(session.turn));
+        }
+      } else {
+        lines.push('❌ Игрок   vs   🤖 бот');
+        if (session.over) {
+          lines.push(resultText(session));
+        } else {
+          lines.push(session.turn === 'X' ? 'Ход: твой' : 'Ход: бота');
+        }
+        lines.push('Сложность: ' + LEVELS[session.level].label);
+      }
+      return lines;
+    }
+
+    function rewardCoins(session) {
+      if (session.mode !== 'bot') return 0;
+      return session.result === 'X' ? 15 : 0;
+    }
+
+    function infoLines(session) {
+      var lines = [];
+      if (session.last) {
+        lines.push('Последний ход: ' + MARKS[session.last.mark] + ' ' + boardName(session.last.index));
+      }
+      if (session.over && session.mode === 'bot') {
+        lines.push('Награда: ' + rewardCoins(session) + ' ' + COIN);
+        lines.push('Баланс: ' + balance() + ' ' + COIN);
+      }
+      return lines;
+    }
+
+    function buildGrid(session) {
+      var grid = elem('div', 'gw-grid');
+      var line = (session.over && session.result && session.result !== 'draw')
+        ? winningLine(session.board, session.result)
+        : null;
+
+      for (var index = 0; index < 9; index++) {
+        (function (cellIndex) {
+          var mark = session.board[cellIndex];
+          var cell = button(MARKS[mark] || EMPTY_CELL, 'gw-cell', function () { onCell(cellIndex); });
+          cell.setAttribute('aria-label', 'Клетка ' + boardName(cellIndex) +
+            (mark === EMPTY ? ', пусто' : ', ' + mark));
+
+          if (mark !== EMPTY) cell.classList.add('gw-fixed');
+          if (line && (line[0] === cellIndex || line[1] === cellIndex || line[2] === cellIndex)) {
+            var bad = session.mode === 'bot' && session.result === 'O';
+            cell.classList.add(bad ? 'gw-bad' : 'gw-ok');
+          }
+          var botThinking = session.mode === 'bot' && session.turn === 'O' && !session.over;
+          cell.disabled = Boolean(session.over || mark !== EMPTY || botThinking);
+          grid.appendChild(cell);
+        })(index);
+      }
+      return grid;
+    }
+
+    function renderGame() {
+      var session = state;
+      if (!session) {
+        renderMenu();
+        return;
+      }
+      clearView();
+
+      view.appendChild(elem('div', 'gw-title', GAME.emoji + ' ' + GAME.title));
+
+      var badges = elem('div', 'gw-row');
+      badges.appendChild(elem('span', 'gw-badge',
+        session.mode === 'duo' ? '👥 На двоих' : '🤖 ' + LEVELS[session.level].label));
+      view.appendChild(badges);
+
+      var status = elem('div', 'gw-status');
+      var lines = statusLines(session);
+      for (var i = 0; i < lines.length; i++) status.appendChild(elem('div', null, lines[i]));
+      view.appendChild(status);
+
+      view.appendChild(buildGrid(session));
+
+      var info = infoLines(session);
+      if (info.length) view.appendChild(textPanel(info, 'gw-panel'));
+
+      var actions = elem('div', 'gw-row');
+      actions.appendChild(button(session.over ? '🔄 Ещё партия' : '🔄 Новая партия',
+        'gw-btn gw-primary', restart));
+      actions.appendChild(button('↩ В меню', 'gw-btn gw-ghost', goBack));
+      view.appendChild(actions);
+
+      if (session.mode === 'bot') {
+        var levels = elem('div', 'gw-row');
+        for (var k = 0; k < LEVEL_ORDER.length; k++) {
+          (function (key) {
+            levels.appendChild(button(
+              (session.level === key ? '🔸 ' : '') + LEVELS[key].label,
+              'gw-btn ' + (session.level === key ? 'gw-primary' : 'gw-ghost'),
+              function () { setLevel(key); }
+            ));
+          })(LEVEL_ORDER[k]);
+        }
+        view.appendChild(levels);
+      }
+    }
+
+    // ---------------------------------------------------------------- события
+    function onCell(index) {
+      var session = state;
+      if (!session || session.over) return;
+      if (session.board[index] !== EMPTY) {
+        toast('Клетка занята');
+        return;
+      }
+      if (session.mode === 'bot' && session.turn !== 'X') {
+        toast('Сейчас ход бота');
+        return;
+      }
+
+      session.board = place(session.board, index, session.turn);
+      session.last = { mark: session.turn, index: index };
+      toast(MARKS[session.last.mark] + ' → ' + boardName(index));
+      session.turn = opponent(session.last.mark);
+
+      if (settle()) {
+        renderGame();
+        return;
+      }
+      renderGame();
+      if (session.mode === 'bot' && session.turn === 'O') scheduleBot();
+    }
+
+    function scheduleBot() {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(function () {
+        timer = null;
+        if (destroyed) return;
+        botTurn();
+      }, 350);
+    }
+
+    function botTurn() {
+      var session = state;
+      if (!session || session.over || session.mode !== 'bot' || session.turn !== 'O') return;
+      var index = chooseMove(session.board, 'O', session.level);
+      if (index === null) return;
+      session.board = place(session.board, index, 'O');
+      session.last = { mark: 'O', index: index };
+      session.turn = opponent('O');
+      settle();
+      renderGame();
+    }
+
+    // Проверить конец партии. true — игра завершена.
+    function settle() {
+      var session = state;
+      var result = winner(session.board);
+      if (result === null) return false;
+      session.result = result;
+      session.over = true;
+      payOut(session);
+      return true;
+    }
+
+    function payOut(session) {
+      if (rewardGiven) return;
+      rewardGiven = true;
+      // В режиме «на двоих» монеты не начисляются: оба игрока за одним экраном.
+      if (session.mode !== 'bot') return;
+      if (session.result === 'X') {
+        giveReward({ coins: 15, win: true, points: 15 });
+      } else {
+        // Ничья или поражение — засчитываем как не-победу, монет не даём.
+        giveReward({ lose: true });
+      }
+    }
+
+    function setLevel(key) {
+      var session = state;
+      if (!session || session.mode !== 'bot') return;
+      level = key;
+      session.level = key;
+      resetBoard(session, 'Новая партия');
+    }
+
+    function restart() {
+      var session = state;
+      if (!session) {
+        renderMenu();
+        return;
+      }
+      resetBoard(session, 'Новая партия');
+    }
+
+    function resetBoard(session, message) {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      session.board = newBoard();
+      session.turn = 'X';
+      session.last = null;
+      session.result = null;
+      session.over = false;
+      rewardGiven = false;
+      screen = 'game';
+      toast(message);
+      renderGame();
+    }
+
+    renderMenu();
+
+    return {
+      destroy: function () {
+        destroyed = true;
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        if (view.parentNode) view.parentNode.removeChild(view);
+      }
+    };
+  }
+
+  window.Games.tictactoe = GAME;
+})();
+
+</script>
+  <script>
+/* 🪢 Виселица — мини-игра для «Игрового зала».
+ *
+ * Классический скрипт: без import/export, без зависимостей, работает по file://.
+ * Регистрируется как window.Games.hangman и монтируется в переданный root.
+ */
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ данные (из hangman.py) */
+
+  // (слово, подсказка). Только буквы, без «ё» — она приравнивается к «е».
+  var WORDS = [
+    ['телеграм', 'мессенджер с бумажными самолётиками'],
+    ['клавиатура', 'то, чем ты сейчас пользуешься'],
+    ['программист', 'человек, который гасит баги'],
+    ['алгоритм', 'конечная последовательность шагов'],
+    ['вселенная', 'всё, что нас окружает'],
+    ['пингвин', 'нелетающая птица в смокинге'],
+    ['велосипед', 'два колеса и педали'],
+    ['космонавт', 'профессия Юрия Гагарина'],
+    ['шоколад', 'сладость из какао'],
+    ['библиотека', 'дом для книг'],
+    ['фейерверк', 'взрыв радости в небе'],
+    ['путешествие', 'дорога в новые места'],
+    ['карандаш', 'пишет и стирается'],
+    ['аквариум', 'стеклянный дом для рыбок'],
+    ['гитара', 'шесть струн и гриф'],
+    ['снеговик', 'морковка вместо носа'],
+    ['телескоп', 'прибор для наблюдения за звёздами'],
+    ['марафон', 'дистанция 42 километра'],
+    ['апельсин', 'цитрус в оранжевой кожуре'],
+    ['вертолет', 'летает на винте сверху'],
+    ['динозавр', 'вымер миллионы лет назад'],
+    ['калькулятор', 'считает за тебя'],
+    ['магнит', 'притягивает железо'],
+    ['облако', 'белое и пушистое в небе'],
+    ['пекарня', 'там пахнет хлебом'],
+    ['радуга', 'семь цветов после дождя'],
+    ['самовар', 'русский прибор для чая'],
+    ['телефон', 'звонит в кармане'],
+    ['улитка', 'носит домик на спине'],
+    ['фонарик', 'светит в темноте'],
+    ['художник', 'рисует красками'],
+    ['циркуль', 'чертит ровные круги'],
+    ['чемпион', 'первое место в турнире'],
+    ['шахматы', 'игра королей'],
+    ['экскаватор', 'копает ковшом'],
+    ['ящерица', 'хвост отрастает заново'],
+    ['автомобиль', 'четыре колеса и руль'],
+    ['бабочка', 'была гусеницей'],
+    ['ветер', 'его не видно, но он есть'],
+    ['галактика', 'звёздная система с Млечным Путём'],
+    ['дельфин', 'умное морское животное'],
+    ['журналист', 'ищет новости и пишет статьи'],
+    ['зеркало', 'показывает твоё отражение'],
+    ['история', 'наука о прошлом'],
+    ['кошелек', 'там живут монеты'],
+    ['лимонад', 'кислый летний напиток'],
+    ['мандарин', 'новогодний цитрус'],
+    ['ноутбук', 'компьютер, который складывается'],
+    ['остров', 'земля в окружении воды'],
+    ['парашют', 'спасает при прыжке с высоты'],
+    ['ракета', 'летит в космос'],
+    ['солнце', 'звезда, вокруг которой мы кружимся'],
+    ['трактор', 'пашет поле'],
+    ['урожай', 'то, что собрали осенью'],
+    ['футбол', 'игра с мячом и двумя воротами'],
+    ['хирург', 'врач со скальпелем'],
+    ['цирк', 'там клоуны и акробаты'],
+    ['часы', 'показывают время'],
+    ['шарф', 'греет шею зимой'],
+    ['щенок', 'маленькая собака'],
+    ['энциклопедия', 'книга обо всём на свете'],
+    ['юмор', 'умение смеяться'],
+    ['якорь', 'держит корабль на месте']
+  ];
+
+  var MAX_MISTAKES = 7;
+
+  // Рисунок виселицы: 0 ошибок … 7 ошибок.
+  var GALLOWS = [
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║\n' +
+    '║\n' +
+    '║\n' +
+    '║\n' +
+    '╩═══════════',
+
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║     O\n' +
+    '║\n' +
+    '║\n' +
+    '║\n' +
+    '╩═══════════',
+
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║     O\n' +
+    '║     |\n' +
+    '║\n' +
+    '║\n' +
+    '╩═══════════',
+
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║     O\n' +
+    '║    /|\n' +
+    '║\n' +
+    '║\n' +
+    '╩═══════════',
+
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║     O\n' +
+    '║    /|\\\n' +
+    '║\n' +
+    '║\n' +
+    '╩═══════════',
+
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║     O\n' +
+    '║    /|\\\n' +
+    '║    /\n' +
+    '║\n' +
+    '╩═══════════',
+
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║     O\n' +
+    '║    /|\\\n' +
+    '║    / \\\n' +
+    '║\n' +
+    '╩═══════════',
+
+    '╔═════╗\n' +
+    '║     |\n' +
+    '║    _O_\n' +
+    '║    /|\\\n' +
+    '║    / \\\n' +
+    '║\n' +
+    '╩═══════════'
+  ];
+
+  var HINT_COST = 15;
+  var REWARD_WIN = 40;
+
+  var ALPHABET = [
+    'а', 'б', 'в', 'г', 'д', 'е', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р',
+    'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'
+  ];
+
+  var RULES =
+    'Я загадываю слово и показываю его длину точками.\n' +
+    'Присылай одну букву — или слово целиком, если уверен.\n' +
+    'Каждая ошибка дорисовывает человечка: их всего ' + MAX_MISTAKES + '.\n\n' +
+    'Можно купить подсказку за ' + HINT_COST + ' 🪙 — откроется случайная буква.\n' +
+    'Выход: «↩ В меню».';
+
+  var HINT_BTN = '💡 Открыть букву (' + HINT_COST + ' 🪙)';
+
+  /* ------------------------------------------------------------------ чистая логика (порт Python) */
+
+  function maskWord(word, guessed) {
+    var out = [];
+    for (var i = 0; i < word.length; i++) {
+      out.push(hasLetter(guessed, word.charAt(i)) ? word.charAt(i) : '•');
+    }
+    return out.join(' ');
+  }
+
+  function hasLetter(list, letter) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] === letter) return true;
+    }
+    return false;
+  }
+
+  function normalizeLetter(raw) {
+    if (!raw) return null;
+    var text = String(raw).trim().toLowerCase().replace(/ё/g, 'е');
+    if (text.length !== 1 || !/[a-zа-я]/.test(text)) return null;
+    return text;
+  }
+
+  function normalizeWord(raw) {
+    if (!raw) return null;
+    var text = String(raw).trim().toLowerCase().replace(/ё/g, 'е');
+    if (text.length < 2) return null;
+    if (!/^[a-zа-я\- ]+$/.test(text)) return null;
+    return text;
+  }
+
+  function isWon(word, guessed) {
+    for (var i = 0; i < word.length; i++) {
+      if (!hasLetter(guessed, word.charAt(i))) return false;
+    }
+    return true;
+  }
+
+  function countLetters(word, letter) {
+    var n = 0;
+    for (var i = 0; i < word.length; i++) {
+      if (word.charAt(i) === letter) n++;
+    }
+    return n;
+  }
+
+  function uniqueSorted(list) {
+    var seen = {};
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      if (!seen[list[i]]) {
+        seen[list[i]] = true;
+        out.push(list[i]);
+      }
+    }
+    return out.sort();
+  }
+
+  function pickWord() {
+    return WORDS[Math.floor(Math.random() * WORDS.length)];
+  }
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  function call(fn, arg) {
+    if (typeof fn === 'function') {
+      try {
+        return fn(arg);
+      } catch (err) {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  /* ------------------------------------------------------------------ игра */
+
+  function mount(root, api) {
+    api = api || {};
+    root = root || document.body;
+    root.innerHTML = '';
+
+    var state = {
+      word: '',
+      tip: '',
+      guessed: [],
+      wrong: [],
+      hints: 0,
+      over: false
+    };
+
+    var statusEl, gallowsEl, wordEl, tipEl, wrongEl, openedEl, letterGrid, inputEl;
+
+    function buildShell() {
+      root.appendChild(el('div', 'gw-title', '🪢 Виселица'));
+      root.appendChild(el('div', 'gw-desc', HangmanGame.description));
+      root.appendChild(el('div', 'gw-badge', 'Ошибок: 0 / ' + MAX_MISTAKES));
+
+      var panel = el('div', 'gw-panel');
+      gallowsEl = el('pre', 'gw-gallows');
+      panel.appendChild(gallowsEl);
+      root.appendChild(panel);
+
+      wordEl = el('div', 'gw-status');
+      root.appendChild(wordEl);
+
+      tipEl = el('div', 'gw-desc');
+      root.appendChild(tipEl);
+
+      var counters = el('div', 'gw-row');
+      wrongEl = el('div', 'gw-status');
+      openedEl = el('div', 'gw-status');
+      counters.appendChild(wrongEl);
+      counters.appendChild(openedEl);
+      root.appendChild(counters);
+
+      var inputRow = el('div', 'gw-row');
+      inputEl = el('input', 'gw-input');
+      inputEl.type = 'text';
+      inputEl.maxLength = 20;
+      inputEl.placeholder = 'Буква или слово целиком';
+      inputEl.autocomplete = 'off';
+      inputRow.appendChild(inputEl);
+
+      var tryBtn = el('button', 'gw-btn', 'Проверить');
+      tryBtn.type = 'button';
+      tryBtn.addEventListener('click', function () {
+        handleRaw(inputEl.value);
+      });
+      inputRow.appendChild(tryBtn);
+      root.appendChild(inputRow);
+
+      letterGrid = el('div', 'gw-grid');
+      for (var i = 0; i < ALPHABET.length; i++) {
+        (function (letter) {
+          var cell = el('button', 'gw-cell', letter);
+          cell.type = 'button';
+          cell.setAttribute('data-letter', letter);
+          cell.addEventListener('click', function () {
+            tryLetter(letter);
+          });
+          letterGrid.appendChild(cell);
+        })(ALPHABET[i]);
+      }
+      root.appendChild(letterGrid);
+
+      var actions = el('div', 'gw-row');
+      var hintBtn = el('button', 'gw-btn gw-primary', HINT_BTN);
+      hintBtn.type = 'button';
+      hintBtn.setAttribute('data-act', 'hint');
+      hintBtn.addEventListener('click', buyHint);
+      actions.appendChild(hintBtn);
+
+      var newBtn = el('button', 'gw-btn', '🔁 Новое слово');
+      newBtn.type = 'button';
+      newBtn.addEventListener('click', newGame);
+      actions.appendChild(newBtn);
+
+      var backBtn = el('button', 'gw-btn gw-ghost', '↩ В меню');
+      backBtn.type = 'button';
+      backBtn.addEventListener('click', function () {
+        call(api.back);
+      });
+      actions.appendChild(backBtn);
+      root.appendChild(actions);
+
+      statusEl = el('div', 'gw-status');
+      root.appendChild(statusEl);
+
+      root.appendChild(el('div', 'gw-desc', RULES));
+
+      inputEl.addEventListener('keydown', onKeyDown);
+    }
+
+    function onKeyDown(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleRaw(inputEl.value);
+      }
+    }
+
+    function onDocKeyDown(event) {
+      if (state.over) return;
+      var target = event.target;
+      if (target === inputEl) return;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) return;
+      var letter = normalizeLetter(event.key);
+      if (letter) {
+        event.preventDefault();
+        tryLetter(letter);
+      }
+    }
+
+    function currentBalance() {
+      var value = call(api.balance);
+      if (typeof value !== 'number' || !isFinite(value)) return 0;
+      return value;
+    }
+
+    function toast(text) {
+      call(api.toast, text);
+    }
+
+    function setStatus(text) {
+      statusEl.textContent = text || '';
+    }
+
+    function render() {
+      var wrongCount = state.wrong.length;
+      gallowsEl.textContent = GALLOWS[Math.min(wrongCount, MAX_MISTAKES)];
+      wordEl.textContent = 'Слово: ' + maskWord(state.word, state.guessed) +
+        ' (' + state.word.length + ' букв)';
+      tipEl.textContent = state.tip ? 'Подсказка: ' + state.tip : '';
+      wrongEl.textContent = 'Ошибки: ' + (state.wrong.length
+        ? state.wrong.join(' ')
+        : '—') + '  (' + wrongCount + '/' + MAX_MISTAKES + ')';
+      openedEl.textContent = state.guessed.length
+        ? 'Открыто: ' + uniqueSorted(state.guessed).join(' ')
+        : 'Открыто: —';
+      var badge = root.querySelector('.gw-badge');
+      if (badge) badge.textContent = 'Ошибок: ' + wrongCount + ' / ' + MAX_MISTAKES;
+      refreshKeyboard();
+    }
+
+    function refreshKeyboard() {
+      var cells = letterGrid.children;
+      for (var i = 0; i < cells.length; i++) {
+        var cell = cells[i];
+        var letter = cell.getAttribute('data-letter');
+        var cls = 'gw-cell';
+        if (hasLetter(state.guessed, letter)) {
+          cls += ' gw-ok';
+        } else if (hasLetter(state.wrong, letter)) {
+          cls += ' gw-bad';
+        }
+        cell.className = cls;
+        cell.disabled = state.over || hasLetter(state.guessed, letter) || hasLetter(state.wrong, letter);
+      }
+    }
+
+    function newGame() {
+      var picked = pickWord();
+      state.word = picked[0];
+      state.tip = picked[1];
+      state.guessed = [];
+      state.wrong = [];
+      state.hints = 0;
+      state.over = false;
+      inputEl.value = '';
+      inputEl.disabled = false;
+      setStatus('Новое слово! Подсказка: ' + state.tip);
+      var hintBtn = root.querySelector('[data-act="hint"]');
+      if (hintBtn) hintBtn.disabled = false;
+      render();
+    }
+
+    function handleRaw(raw) {
+      if (state.over) {
+        toast('Эта партия уже закончилась');
+        return;
+      }
+      var text = (raw || '').trim();
+      if (!text) return;
+      var letter = normalizeLetter(text);
+      if (letter) {
+        inputEl.value = '';
+        tryLetter(letter);
+        return;
+      }
+      var word = normalizeWord(text);
+      if (word && word.length > 1) {
+        inputEl.value = '';
+        tryWord(word);
+        return;
+      }
+      setStatus('Пришли одну букву, например: к — или слово целиком, если готов рискнуть.');
+    }
+
+    function tryLetter(letter) {
+      if (state.over) return;
+      if (hasLetter(state.guessed, letter) || hasLetter(state.wrong, letter)) {
+        setStatus('Буква ' + letter + ' уже была 🙃');
+        return;
+      }
+      if (state.word.indexOf(letter) !== -1) {
+        state.guessed.push(letter);
+        var count = countLetters(state.word, letter);
+        var note = '✅ Есть такая буква! ' + letter.toUpperCase() + ' ×' + count;
+        render();
+        setStatus(note);
+        if (isWon(state.word, state.guessed)) finishWin(note);
+        return;
+      }
+      state.wrong.push(letter);
+      var left = MAX_MISTAKES - state.wrong.length;
+      render();
+      setStatus('❌ Буквы ' + letter.toUpperCase() + ' нет. Осталось ошибок: ' + left);
+      if (left <= 0) finishLose();
+    }
+
+    function tryWord(word) {
+      if (state.over) return;
+      if (word === state.word) {
+        state.guessed = uniqueSorted(state.word.split(''));
+        finishWin('✅ Угадано целым словом!');
+        return;
+      }
+      state.wrong.push('«' + word.slice(0, 12) + '»');
+      var left = MAX_MISTAKES - state.wrong.length;
+      render();
+      setStatus('❌ Не то слово. Осталось ошибок: ' + left);
+      if (left <= 0) finishLose();
+    }
+
+    function buyHint() {
+      if (state.over) return;
+      var closed = [];
+      var letters = uniqueSorted(state.word.split(''));
+      for (var i = 0; i < letters.length; i++) {
+        if (!hasLetter(state.guessed, letters[i])) closed.push(letters[i]);
+      }
+      if (!closed.length) {
+        toast('Все буквы уже открыты');
+        return;
+      }
+      var balance = currentBalance();
+      if (balance < HINT_COST) {
+        toast('Нужно ' + HINT_COST + ' 🪙, у тебя ' + balance);
+        return;
+      }
+      if (call(api.spend, HINT_COST) === false) {
+        toast('Нужно ' + HINT_COST + ' 🪙, у тебя ' + currentBalance());
+        return;
+      }
+      var letter = closed[0];
+      state.guessed.push(letter);
+      state.hints += 1;
+      var note = '💡 Куплена буква ' + letter.toUpperCase() + ' (−' + HINT_COST + ' 🪙)';
+      render();
+      setStatus(note);
+      if (isWon(state.word, state.guessed)) finishWin(note);
+    }
+
+    function lockBoard() {
+      state.over = true;
+      inputEl.disabled = true;
+      var hintBtn = root.querySelector('[data-act="hint"]');
+      if (hintBtn) hintBtn.disabled = true;
+      refreshKeyboard();
+    }
+
+    function finishWin(note) {
+      var word = state.word;
+      var hints = state.hints;
+      var coins = Math.max(Math.floor(REWARD_WIN / 3), REWARD_WIN - hints * HINT_COST);
+      var mistakes = state.wrong.length;
+      var points = Math.max(1, MAX_MISTAKES - mistakes);
+      lockBoard();
+      render();
+      call(api.reward, { coins: coins, win: true, points: points });
+      setStatus('🎉 Слово угадано: ' + word.toUpperCase() +
+        (note ? '\n' + note : '') +
+        '\nОшибок: ' + mistakes + ' из ' + MAX_MISTAKES +
+        '\nНаграда: ' + coins + ' 🪙   (точек: ' + points + ')' +
+        '\nБаланс: ' + currentBalance() + ' 🪙');
+      toast('🎉 +' + coins + ' 🪙');
+    }
+
+    function finishLose() {
+      var word = state.word;
+      lockBoard();
+      render();
+      call(api.reward, { lose: true });
+      setStatus('💀 Не угадал.\nСлово было: ' + word.toUpperCase() +
+        '\nБаланс: ' + currentBalance() + ' 🪙');
+      toast('💀 Слово было: ' + word.toUpperCase());
+    }
+
+    buildShell();
+    document.addEventListener('keydown', onDocKeyDown);
+    newGame();
+
+    return {
+      destroy: function () {
+        document.removeEventListener('keydown', onDocKeyDown);
+        if (inputEl) inputEl.removeEventListener('keydown', onKeyDown);
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  var HangmanGame = {
+    key: 'hangman',
+    emoji: '🪢',
+    title: 'Виселица',
+    description: '63 слова с подсказками, 7 ошибок, покупка буквы за монеты',
+    rules: RULES,
+    mount: mount,
+    words: WORDS,
+    maxMistakes: MAX_MISTAKES,
+    hintCost: HINT_COST,
+    rewardWin: REWARD_WIN
+  };
+
+  window.Games = window.Games || {};
+  window.Games.hangman = HangmanGame;
+})();
+
+</script>
+  <script>
+/* 🔢 Судоку — мини-игра для «Игрового зала».
+ *
+ * Классическое судоку 9×9: генерация корректного поля с единственным решением,
+ * три сложности, подсказка «открыть клетку» за 20 монет, награда до 70 монет.
+ * Обычный скрипт без модулей и зависимостей — работает по file://.
+ */
+(function () {
+  'use strict';
+
+  // ------------------------------------------------------------------ константы
+  var SIZE = 9;
+  var BOX = 3;
+  var EMPTY = 0;
+  var DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  var ROW_LETTERS = 'ABCDEFGHI';
+  var HINT_COST = 20;
+
+  // ключ: [подпись, сколько клеток убираем, награда]
+  var DIFFICULTIES = {
+    easy: { key: 'easy', label: '😊 Лёгкое', remove: 36, reward: 25 },
+    normal: { key: 'normal', label: '🙂 Среднее', remove: 46, reward: 45 },
+    hard: { key: 'hard', label: '😈 Сложное', remove: 52, reward: 70 }
+  };
+
+  var RULES = [
+    'В каждой строке, столбце и квадрате 3×3 должны стоять цифры 1–9 по одному разу.',
+    '',
+    'Как играть:',
+    '1. Нажми клетку — она подсветится.',
+    '2. Нажми цифру 1–9 на панели или на клавиатуре.',
+    '3. 0 или Backspace — стереть клетку.',
+    '',
+    'Клетки-условия выделены и не редактируются. Ошибки сразу не подсвечиваются —',
+    'как в настоящем судоку. Победа, когда всё поле заполнено верно.',
+    'Подсказка «Открыть клетку» стоит 20 🪙.'
+  ].join('\n');
+
+  // ------------------------------------------------------------------ чистая логика
+  function emptyBoard() {
+    var board = [];
+    for (var r = 0; r < SIZE; r++) {
+      var row = [];
+      for (var c = 0; c < SIZE; c++) row.push(EMPTY);
+      board.push(row);
+    }
+    return board;
+  }
+
+  function clone(board) {
+    var copy = [];
+    for (var r = 0; r < SIZE; r++) copy.push(board[r].slice());
+    return copy;
+  }
+
+  function shuffled(list, rng) {
+    var items = list.slice();
+    for (var i = items.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var tmp = items[i];
+      items[i] = items[j];
+      items[j] = tmp;
+    }
+    return items;
+  }
+
+  // Допустимые цифры для клетки (та же логика, что candidates() в sudoku.py).
+  function candidates(board, row, col) {
+    var used = {};
+    var i, r, c;
+    for (i = 0; i < SIZE; i++) {
+      used[board[row][i]] = true;
+      used[board[i][col]] = true;
+    }
+    var boxRow = Math.floor(row / BOX) * BOX;
+    var boxCol = Math.floor(col / BOX) * BOX;
+    for (r = boxRow; r < boxRow + BOX; r++) {
+      for (c = boxCol; c < boxCol + BOX; c++) used[board[r][c]] = true;
+    }
+    var options = [];
+    for (i = 0; i < DIGITS.length; i++) {
+      if (!used[DIGITS[i]]) options.push(DIGITS[i]);
+    }
+    return options;
+  }
+
+  function uniqueValues(values) {
+    var seen = {};
+    var filled = 0;
+    for (var i = 0; i < values.length; i++) {
+      var value = values[i];
+      if (value === EMPTY) continue;
+      if (seen[value]) return false;
+      seen[value] = true;
+      filled++;
+    }
+    return filled >= 0;
+  }
+
+  function isConsistent(board) {
+    for (var index = 0; index < SIZE; index++) {
+      var row = [];
+      var column = [];
+      var i;
+      for (i = 0; i < SIZE; i++) {
+        row.push(board[index][i]);
+        column.push(board[i][index]);
+      }
+      if (!uniqueValues(row) || !uniqueValues(column)) return false;
+      var boxRow = Math.floor(index / BOX) * BOX;
+      var boxCol = (index % BOX) * BOX;
+      var box = [];
+      for (var r = boxRow; r < boxRow + BOX; r++) {
+        for (var c = boxCol; c < boxCol + BOX; c++) box.push(board[r][c]);
+      }
+      if (!uniqueValues(box)) return false;
+    }
+    return true;
+  }
+
+  // Полная проверка корректности заполненной доски (is_valid в sudoku.py).
+  function isValid(board) {
+    for (var index = 0; index < SIZE; index++) {
+      var row = [];
+      var column = [];
+      var i;
+      for (i = 0; i < SIZE; i++) {
+        row.push(board[index][i]);
+        column.push(board[i][index]);
+      }
+      row.sort(function (a, b) { return a - b; });
+      column.sort(function (a, b) { return a - b; });
+      for (i = 0; i < SIZE; i++) {
+        if (row[i] !== DIGITS[i] || column[i] !== DIGITS[i]) return false;
+      }
+      var boxRow = Math.floor(index / BOX) * BOX;
+      var boxCol = (index % BOX) * BOX;
+      var box = [];
+      for (var r = boxRow; r < boxRow + BOX; r++) {
+        for (var c = boxCol; c < boxCol + BOX; c++) box.push(board[r][c]);
+      }
+      box.sort(function (a, b) { return a - b; });
+      for (i = 0; i < SIZE; i++) {
+        if (box[i] !== DIGITS[i]) return false;
+      }
+    }
+    return true;
+  }
+
+  // Клетка с минимумом вариантов (эвристика MRV) или null.
+  function findEmptyMRV(board) {
+    var best = null;
+    var bestOptions = null;
+    for (var row = 0; row < SIZE; row++) {
+      for (var col = 0; col < SIZE; col++) {
+        if (board[row][col] !== EMPTY) continue;
+        var options = candidates(board, row, col);
+        if (!options.length) return { row: row, col: col, options: [] };
+        if (bestOptions === null || options.length < bestOptions.length) {
+          best = { row: row, col: col };
+          bestOptions = options;
+          if (options.length === 1) return { row: row, col: col, options: options };
+        }
+      }
+    }
+    if (best === null) return null;
+    return { row: best.row, col: best.col, options: bestOptions };
+  }
+
+  // Заполнить доску случайным корректным решением (in-place).
+  function fillBoard(board, rng) {
+    var spot = findEmptyMRV(board);
+    if (spot === null) return true;
+    if (!spot.options.length) return false;
+    var options = shuffled(spot.options, rng);
+    for (var i = 0; i < options.length; i++) {
+      board[spot.row][spot.col] = options[i];
+      if (fillBoard(board, rng)) return true;
+      board[spot.row][spot.col] = EMPTY;
+    }
+    return false;
+  }
+
+  // Сколько решений у доски (не больше limit).
+  function countSolutions(board, limit) {
+    var total = 0;
+
+    function walk() {
+      if (total >= limit) return;
+      var spot = findEmptyMRV(board);
+      if (spot === null) {
+        total += 1;
+        return;
+      }
+      for (var i = 0; i < spot.options.length; i++) {
+        board[spot.row][spot.col] = spot.options[i];
+        walk();
+        board[spot.row][spot.col] = EMPTY;
+        if (total >= limit) return;
+      }
+    }
+
+    walk();
+    return total;
+  }
+
+  // Сгенерировать пазл с единственным решением: {puzzle, solution}.
+  function makePuzzle(remove, rng, unique) {
+    if (unique === undefined) unique = true;
+    var solution = emptyBoard();
+    fillBoard(solution, rng);
+    var puzzle = clone(solution);
+
+    var cells = [];
+    for (var row = 0; row < SIZE; row++) {
+      for (var col = 0; col < SIZE; col++) cells.push([row, col]);
+    }
+    cells = shuffled(cells, rng);
+
+    var removed = 0;
+    for (var i = 0; i < cells.length && removed < remove; i++) {
+      var r = cells[i][0];
+      var c = cells[i][1];
+      var saved = puzzle[r][c];
+      puzzle[r][c] = EMPTY;
+      if (unique) {
+        var probe = clone(puzzle);
+        if (countSolutions(probe, 2) !== 1) {
+          puzzle[r][c] = saved;
+          continue;
+        }
+      }
+      removed += 1;
+    }
+    return { puzzle: puzzle, solution: solution, removed: removed };
+  }
+
+  // Доска заполнена, не противоречит условию и корректна.
+  function isSolved(puzzle, board) {
+    for (var row = 0; row < SIZE; row++) {
+      for (var col = 0; col < SIZE; col++) {
+        if (board[row][col] === EMPTY) return false;
+        if (puzzle[row][col] !== EMPTY && board[row][col] !== puzzle[row][col]) return false;
+      }
+    }
+    return isValid(board);
+  }
+
+  function cellName(row, col) {
+    return ROW_LETTERS.charAt(row) + (col + 1);
+  }
+
+  function formatTime(seconds) {
+    var total = Math.max(0, Math.floor(seconds));
+    var minutes = Math.floor(total / 60);
+    var rest = total % 60;
+    return (minutes < 10 ? '0' : '') + minutes + ':' + (rest < 10 ? '0' : '') + rest;
+  }
+
+  function clearNode(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+  }
+
+  // ------------------------------------------------------------------ игра
+  function mount(root, api) {
+    api = api || {};
+    var balance = typeof api.balance === 'function' ? api.balance : function () { return 0; };
+    var spend = typeof api.spend === 'function' ? api.spend : function () { return false; };
+    var reward = typeof api.reward === 'function' ? api.reward : function () {};
+    var toast = typeof api.toast === 'function' ? api.toast : function () {};
+    var back = typeof api.back === 'function' ? api.back : function () {};
+
+    var rng = Math.random;
+    var state = null;      // активная партия
+    var finished = false;  // партия завершена (победа)
+    var timerId = null;
+    var stage = null;      // контейнер текущего экрана
+    var destroyed = false;
+
+    // ---------------------------------------------------- служебный каркас
+    function el(tag, className, text) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      return node;
+    }
+
+    function button(text, className, onClick) {
+      var node = el('button', className || 'gw-btn', text);
+      node.type = 'button';
+      node.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (destroyed) return;
+        onClick();
+      });
+      return node;
+    }
+
+    function newStage() {
+      root.innerHTML = '';
+      stage = el('div');
+      root.appendChild(stage);
+      return stage;
+    }
+
+    function row(parent, className) {
+      var node = el('div', className || 'gw-row');
+      if (parent) parent.appendChild(node);
+      return node;
+    }
+
+    function title(parent, text) {
+      var node = el('div', 'gw-title', text);
+      if (parent) parent.appendChild(node);
+      return node;
+    }
+
+    function status(parent, text) {
+      var node = el('div', 'gw-status', text);
+      if (parent) parent.appendChild(node);
+      return node;
+    }
+
+    function badge(parent, text) {
+      var node = el('span', 'gw-badge', text);
+      if (parent) parent.appendChild(node);
+      return node;
+    }
+
+    function stopTimer() {
+      if (timerId !== null) {
+        window.clearInterval(timerId);
+        timerId = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimer();
+      timerId = window.setInterval(function () {
+        if (destroyed || !state || finished) return;
+        if (state.timerNode && state.timerNode.parentNode) {
+          state.timerNode.textContent = '⏱ ' + formatTime(elapsedSeconds());
+        }
+      }, 1000);
+    }
+
+    function elapsedSeconds() {
+      if (!state) return 0;
+      return Math.floor((Date.now() - state.startedAt) / 1000);
+    }
+
+    function currentBalance() {
+      var value = balance();
+      return typeof value === 'number' && isFinite(value) ? value : 0;
+    }
+
+    // ---------------------------------------------------- экран выбора сложности
+    function renderMenu() {
+      stopTimer();
+      state = null;
+      finished = false;
+      newStage();
+
+      title(stage, '🔢 Судоку');
+      var desc = el('div', 'gw-desc');
+      desc.innerHTML = 'Классическое судоку 9×9: выбирай клетку и вводи цифру.<br>' +
+        'Поле генерируется с единственным решением. Баланс: <b>' + currentBalance() + ' 🪙</b>';
+      stage.appendChild(desc);
+
+      var panel = el('div', 'gw-panel');
+      panel.appendChild(el('div', 'gw-desc', 'Выбери сложность:'));
+      Object.keys(DIFFICULTIES).forEach(function (key) {
+        var level = DIFFICULTIES[key];
+        var line = row(panel);
+        var node = button(level.label + ' · убрать ' + level.remove + ' клеток',
+          'gw-btn gw-primary', function () { startGame(key); });
+        node.style.flex = '1 1 200px';
+        line.appendChild(node);
+        var note = el('span', 'gw-badge', 'награда до ' + level.reward + ' 🪙');
+        note.style.alignSelf = 'center';
+        line.appendChild(note);
+      });
+      stage.appendChild(panel);
+
+      var rulesBox = el('div', 'gw-panel');
+      var pre = el('div');
+      pre.style.whiteSpace = 'pre-wrap';
+      pre.textContent = RULES;
+      rulesBox.appendChild(pre);
+      stage.appendChild(rulesBox);
+
+      var bottom = row(stage);
+      bottom.appendChild(button('↩ В меню', 'gw-btn', back));
+    }
+
+    // ---------------------------------------------------- запуск партии
+    function startGame(levelKey) {
+      var level = DIFFICULTIES[levelKey] || DIFFICULTIES.normal;
+      toast('Генерирую поле…');
+      newStage();
+      title(stage, '🔢 Судоку');
+      status(stage, 'Генерирую поле, сложность ' + level.label + '…');
+
+      // Даём браузеру отрисовать сообщение перед тяжёлой генерацией.
+      window.setTimeout(function () {
+        if (destroyed) return;
+        var generated = makePuzzle(level.remove, rng, true);
+        state = {
+          level: level,
+          puzzle: generated.puzzle,
+          solution: generated.solution,
+          board: clone(generated.puzzle),
+          pick: null,
+          moves: 0,
+          hints: 0,
+          startedAt: Date.now(),
+          timerNode: null,
+          hintsNode: null,
+          statusNode: null,
+          cellNodes: []
+        };
+        finished = false;
+        renderBoard('Сложность: ' + level.label);
+        startTimer();
+      }, 30);
+    }
+
+    // ---------------------------------------------------- статусные подписи
+    function pickText() {
+      if (!state || !state.pick) return 'не выбрана';
+      return cellName(state.pick[0], state.pick[1]);
+    }
+
+    function filledCount() {
+      var total = 0;
+      for (var row = 0; row < SIZE; row++) {
+        for (var col = 0; col < SIZE; col++) {
+          if (state.board[row][col] !== EMPTY) total++;
+        }
+      }
+      return total;
+    }
+
+    function refreshStatus() {
+      if (!state) return;
+      if (state.statusNode) {
+        state.statusNode.textContent = 'Выбранная клетка: ' + pickText() +
+          '   Заполнено: ' + filledCount() + '/81';
+      }
+      if (state.hintsNode) {
+        state.hintsNode.textContent = '💡 Подсказок: ' + state.hints + ' (−' + (state.hints * HINT_COST) + ' 🪙)';
+      }
+    }
+
+    // ---------------------------------------------------- отрисовка поля
+    function renderBoard(note) {
+      if (!state) { renderMenu(); return; }
+      newStage();
+
+      title(stage, '🔢 Судоку · ' + state.level.label);
+      var desc = el('div', 'gw-desc',
+        'Нажми клетку, затем цифру 1–9. Клавиатура тоже работает: 1–9 — цифра, ' +
+        '0 или Backspace — стереть, стрелки — перемещение.');
+      stage.appendChild(desc);
+
+      if (note) {
+        var noteNode = el('div', 'gw-status', note);
+        stage.appendChild(noteNode);
+      }
+
+      var grid = el('div', 'gw-grid');
+      grid.style.display = 'grid';
+      grid.style.gridTemplateColumns = 'repeat(9, 1fr)';
+      grid.style.width = '100%';
+      grid.style.maxWidth = '414px';
+      state.cellNodes = [];
+
+      for (var r = 0; r < SIZE; r++) {
+        for (var c = 0; c < SIZE; c++) {
+          grid.appendChild(buildCell(r, c));
+        }
+      }
+      stage.appendChild(grid);
+
+      // Панель цифр.
+      var pad = el('div', 'gw-panel');
+      var digitsRow = row(pad);
+      for (var d = 1; d <= 9; d++) {
+        digitsRow.appendChild(digitButton(d));
+      }
+      pad.appendChild(digitsRow);
+
+      var eraseRow = row(pad);
+      eraseRow.appendChild(button('🧽 Стереть', 'gw-btn gw-ghost', function () { setCell(null, EMPTY, false); }));
+      eraseRow.appendChild(button('💡 Открыть клетку (' + HINT_COST + ' 🪙)', 'gw-btn', doHint));
+      eraseRow.appendChild(button('✅ Проверить', 'gw-btn', doCheck));
+      stage.appendChild(pad);
+
+      // Строка статуса и счётчики.
+      state.statusNode = status(stage, 'Выбранная клетка: ' + pickText() +
+        '   Заполнено: ' + filledCount() + '/81');
+
+      var info = row(stage);
+      state.timerNode = badge(info, '⏱ ' + formatTime(elapsedSeconds()));
+      state.hintsNode = badge(info, '💡 Подсказок: ' + state.hints + ' (−' + (state.hints * HINT_COST) + ' 🪙)');
+      badge(info, 'Уровень: ' + state.level.label);
+
+      var bottom = row(stage);
+      bottom.appendChild(button('🔁 Новое поле', 'gw-btn gw-ghost', function () {
+        stopTimer();
+        renderMenu();
+      }));
+      bottom.appendChild(button('↩ В меню', 'gw-btn', function () {
+        stopTimer();
+        back();
+      }));
+
+      paintBoard();
+    }
+
+    function buildCell(r, c) {
+      var fixed = state.puzzle[r][c] !== EMPTY;
+      var node = button('', 'gw-cell' + (fixed ? ' gw-fixed' : ''), function () { pickCell(r, c); });
+      // Толстые границы квадратов 3×3 и лёгкая шахматная подсветка блоков.
+      if (c % BOX === BOX - 1 && c !== SIZE - 1) node.style.borderRight = '3px solid #64748b';
+      if (r % BOX === BOX - 1 && r !== SIZE - 1) node.style.borderBottom = '3px solid #64748b';
+      if ((Math.floor(r / BOX) + Math.floor(c / BOX)) % 2 === 1) node.style.background = 'rgba(148, 163, 184, 0.12)';
+      node.style.aspectRatio = '1 / 1';
+      node.style.fontSize = 'clamp(13px, 2.6vw, 19px)';
+      node.style.padding = '0';
+      if (fixed) node.style.fontWeight = '700';
+      state.cellNodes.push(node);
+      return node;
+    }
+
+    function digitButton(digit) {
+      var node = button(String(digit), 'gw-btn', function () { setCell(null, digit, false); });
+      node.style.minWidth = '38px';
+      node.style.flex = '1 1 38px';
+      return node;
+    }
+
+    // Перерисовать содержимое клеток и их состояния.
+    function paintBoard(marks) {
+      if (!state) return;
+      for (var r = 0; r < SIZE; r++) {
+        for (var c = 0; c < SIZE; c++) {
+          var node = state.cellNodes[r * SIZE + c];
+          if (!node) continue;
+          var fixed = state.puzzle[r][c] !== EMPTY;
+          var value = state.board[r][c];
+          node.textContent = value === EMPTY ? '' : String(value);
+          node.className = 'gw-cell' + (fixed ? ' gw-fixed' : '');
+          if (state.pick && state.pick[0] === r && state.pick[1] === c) {
+            node.className += ' gw-active';
+          }
+          if (marks && marks[r][c] === 1) node.className += ' gw-ok';
+          if (marks && marks[r][c] === 2) node.className += ' gw-bad';
+        }
+      }
+    }
+
+    // ---------------------------------------------------- действия
+    function pickCell(row, col) {
+      if (!state || finished) return;
+      if (state.puzzle[row][col] !== EMPTY) {
+        toast(cellName(row, col) + ' — клетка-условие, её менять нельзя');
+        return;
+      }
+      state.pick = [row, col];
+      paintBoard();
+      refreshStatus();
+      toast('Выбрана клетка ' + cellName(row, col));
+    }
+
+    // cell=null — в выбранную клетку; digit=EMPTY — стереть.
+    function setCell(cell, digit, fromHint) {
+      if (!state || finished) return;
+      var row, col;
+      if (cell === null) {
+        if (!state.pick) {
+          toast('Сначала выбери клетку, например E5');
+          return;
+        }
+        row = state.pick[0];
+        col = state.pick[1];
+      } else {
+        row = cell[0];
+        col = cell[1];
+      }
+
+      if (state.puzzle[row][col] !== EMPTY) {
+        toast(cellName(row, col) + ' — клетка-условие');
+        return;
+      }
+
+      if (digit === null || digit === undefined) {
+        toast('Нужна цифра от 1 до 9 (0 — стереть)');
+        return;
+      }
+      if (digit !== EMPTY && (digit < 1 || digit > 9)) {
+        toast('Нужна цифра от 1 до 9 (0 — стереть)');
+        return;
+      }
+
+      if (digit === EMPTY) {
+        if (state.board[row][col] === EMPTY && !fromHint) {
+          toast(cellName(row, col) + ' уже пустая');
+          return;
+        }
+        state.board[row][col] = EMPTY;
+      } else {
+        if (state.board[row][col] === digit) {
+          toast('Там уже стоит ' + digit);
+          return;
+        }
+        state.board[row][col] = digit;
+      }
+
+      state.moves += 1;
+      state.pick = digit ? [row, col] : null;
+      if (!fromHint) {
+        toast(cellName(row, col) + ' → ' + (digit ? digit : 'пусто'));
+      }
+
+      if (isSolved(state.puzzle, state.board)) {
+        finishWin();
+        return;
+      }
+      paintBoard();
+      refreshStatus();
+    }
+
+    function doHint() {
+      if (!state || finished) return;
+      var board = state.board;
+
+      // Ищем, что открыть: выбранная клетка, иначе первая неверная/пустая.
+      var target = null;
+      if (state.pick && state.puzzle[state.pick[0]][state.pick[1]] === EMPTY &&
+          board[state.pick[0]][state.pick[1]] !== state.solution[state.pick[0]][state.pick[1]]) {
+        target = state.pick;
+      } else {
+        for (var row = 0; row < SIZE && !target; row++) {
+          for (var col = 0; col < SIZE; col++) {
+            if (state.puzzle[row][col] === EMPTY && board[row][col] !== state.solution[row][col]) {
+              target = [row, col];
+              break;
+            }
+          }
+        }
+      }
+
+      if (!target) {
+        toast('Ошибок нет — ты молодец!');
+        return;
+      }
+
+      if (!spend(HINT_COST)) {
+        toast('Нужно ' + HINT_COST + ' 🪙, у тебя ' + currentBalance());
+        return;
+      }
+
+      var r = target[0];
+      var c = target[1];
+      var value = state.solution[r][c];
+      state.board[r][c] = value;
+      state.moves += 1;
+      state.hints += 1;
+      state.pick = [r, c];
+      toast('Открыл ' + cellName(r, c) + ' = ' + value);
+
+      if (isSolved(state.puzzle, state.board)) {
+        finishWin();
+        return;
+      }
+      paintBoard();
+      refreshStatus();
+      if (state.statusNode) {
+        state.statusNode.textContent = '💡 Открыта клетка ' + cellName(r, c) +
+          ' (−' + HINT_COST + ' 🪙)   Выбранная клетка: ' + pickText() +
+          '   Заполнено: ' + filledCount() + '/81';
+      }
+    }
+
+    function doCheck() {
+      if (!state || finished) return;
+      var marks = [];
+      var errors = 0;
+      var empty = 0;
+      for (var r = 0; r < SIZE; r++) {
+        marks.push([]);
+        for (var c = 0; c < SIZE; c++) {
+          var value = state.board[r][c];
+          if (value === EMPTY) {
+            marks[r].push(0);
+            empty++;
+          } else if (value === state.solution[r][c]) {
+            marks[r].push(1);
+          } else {
+            marks[r].push(2);
+            errors++;
+          }
+        }
+      }
+      paintBoard(marks);
+
+      if (isSolved(state.puzzle, state.board)) {
+        finishWin();
+        return;
+      }
+
+      var parts = [];
+      if (errors) parts.push('ошибок: ' + errors);
+      if (empty) parts.push('пустых клеток: ' + empty);
+      var text = parts.length ? 'Проверка: ' + parts.join(', ') + '. Ошибки подсвечены красным.' :
+        'Всё заполнено верно!';
+      if (state.statusNode) state.statusNode.textContent = '✅ ' + text;
+      toast(text);
+
+      marks = null;
+      window.setTimeout(function () {
+        if (destroyed || !state || finished) return;
+        paintBoard();
+      }, 1600);
+    }
+
+    // ---------------------------------------------------- победа
+    function finishWin() {
+      if (!state || finished) return;
+      finished = true;
+      stopTimer();
+
+      var coins = state.level.reward;
+      var points = Math.max(1, 200 - Math.floor(state.moves / 3));
+      var seconds = elapsedSeconds();
+      var level = state.level;
+      var moves = state.moves;
+      var hints = state.hints;
+      var puzzle = state.puzzle;
+      var solution = state.solution;
+      var board = state.board;
+
+      reward({ coins: coins, win: true, lose: false, points: points });
+      state = null;
+
+      newStage();
+      title(stage, '🎉 Судоку решено!');
+      var info = el('div', 'gw-desc');
+      info.innerHTML = 'Сложность: <b>' + level.label + '</b><br>' +
+        'Ходов: <b>' + moves + '</b> (из них подсказок: ' + hints + ')<br>' +
+        'Время: <b>' + formatTime(seconds) + '</b><br>' +
+        'Награда: <b>' + coins + ' 🪙</b>, очков: <b>' + points + '</b><br>' +
+        'Баланс: <b>' + currentBalance() + ' 🪙</b>';
+      stage.appendChild(info);
+
+      stage.appendChild(solutionGrid(puzzle, board, true));
+
+      var bottom = row(stage);
+      bottom.appendChild(button('🔁 Новое поле', 'gw-btn gw-primary', function () { renderMenu(); }));
+      bottom.appendChild(button('↩ В меню', 'gw-btn', back));
+
+      // Чистим ссылки на завершённую партию, чтобы таймер/ввод ничего не трогали.
+      puzzle = null; solution = null; board = null;
+      toast('🎉 Судоку решено! Награда: ' + coins + ' 🪙');
+    }
+
+    // Статичная сетка для показа решения (read-only).
+    function solutionGrid(puzzle, board, highlight) {
+      var grid = el('div', 'gw-panel');
+      grid.style.display = 'grid';
+      grid.style.gridTemplateColumns = 'repeat(9, 1fr)';
+      grid.style.gap = '2px';
+      grid.style.maxWidth = '414px';
+      for (var r = 0; r < SIZE; r++) {
+        for (var c = 0; c < SIZE; c++) {
+          var fixed = puzzle[r][c] !== EMPTY;
+          var value = board[r][c] === EMPTY ? '' : String(board[r][c]);
+          var node = el('div', 'gw-cell' + (fixed ? ' gw-fixed' : '') + (highlight ? ' gw-ok' : ''), value);
+          node.style.display = 'flex';
+          node.style.alignItems = 'center';
+          node.style.justifyContent = 'center';
+          node.style.aspectRatio = '1 / 1';
+          if (c % BOX === BOX - 1 && c !== SIZE - 1) node.style.borderRight = '3px solid #64748b';
+          if (r % BOX === BOX - 1 && r !== SIZE - 1) node.style.borderBottom = '3px solid #64748b';
+          grid.appendChild(node);
+        }
+      }
+      return grid;
+    }
+
+    // ---------------------------------------------------- клавиатура
+    function onKeyDown(event) {
+      if (destroyed || !state || finished) return;
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+
+      var target = event.target;
+      var tag = target && target.tagName ? String(target.tagName).toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      var key = event.key;
+      if (key >= '1' && key <= '9') {
+        setCell(null, parseInt(key, 10), false);
+        event.preventDefault();
+        return;
+      }
+      if (key === '0' || key === 'Backspace' || key === 'Delete' || key === 'Escape') {
+        setCell(null, EMPTY, false);
+        event.preventDefault();
+        return;
+      }
+      if (key.indexOf('Arrow') === 0) {
+        var row = state.pick ? state.pick[0] : 0;
+        var col = state.pick ? state.pick[1] : -1;
+        if (key === 'ArrowUp') row = (row + SIZE - 1) % SIZE;
+        if (key === 'ArrowDown') row = (row + 1) % SIZE;
+        if (key === 'ArrowLeft') col = (col + SIZE - 1) % SIZE;
+        if (key === 'ArrowRight') col = (col + 1) % SIZE;
+        if (col < 0) col = 0;
+        if (state.puzzle[row][col] === EMPTY) {
+          state.pick = [row, col];
+          paintBoard();
+          refreshStatus();
+        }
+        event.preventDefault();
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+
+    // ---------------------------------------------------- старт
+    renderMenu();
+
+    return {
+      destroy: function () {
+        destroyed = true;
+        stopTimer();
+        document.removeEventListener('keydown', onKeyDown);
+        state = null;
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  // ------------------------------------------------------------------ регистрация
+  window.Games = window.Games || {};
+  window.Games.sudoku = {
+    key: 'sudoku',
+    emoji: '🔢',
+    title: 'Судоку',
+    description: 'Классическое судоку 9×9: выбирай клетку кнопкой и вводи цифру.',
+    rules: RULES,
+    mount: mount
+  };
+})();
+
+</script>
+  <script>
+/* ✊ Камень-ножницы-бумага.
+ * Камень-ножницы-бумага — мини-игра для «Игрового зала».
+ * Обычный (классический) скрипт: без import/export, без зависимостей,
+ * подключается через <script src="rps.js"><\/script> и работает по file://.
+ */
+(function () {
+  'use strict';
+
+  window.Games = window.Games || {};
+
+  var COIN = '🪙';
+  var TARGET = 3; // серия до 3 побед
+
+  var MOVES = {
+    r: { emoji: '✊', name: 'Камень' },
+    s: { emoji: '✌️', name: 'Ножницы' },
+    p: { emoji: '✋', name: 'Бумага' }
+  };
+  var MOVE_KEYS = ['r', 's', 'p'];
+  var BEATS = { r: 's', s: 'p', p: 'r' };       // ключ бьёт значение
+  var COUNTER = { r: 'p', s: 'r', p: 's' };     // что бьёт наш предыдущий ход игрока
+  var RESULT_LABEL = {
+    win: 'ты выиграл раунд ✅',
+    lose: 'раунд за ботом ❌',
+    draw: 'ничья 🤝'
+  };
+  var RESULT_TOAST = { win: 'Раунд твой!', lose: 'Раунд бота', draw: 'Ничья' };
+
+  // ------------------------------------------------------------- чистая логика
+  // 'win' | 'lose' | 'draw' с точки зрения игрока.
+  function duel(player, bot) {
+    if (player === bot) return 'draw';
+    return BEATS[player] === bot ? 'win' : 'lose';
+  }
+
+  /* Бот слегка подстраивается: чаще играет то, что бьёт частый ход игрока.
+   * Как в исходнике: веса 1.0 + count(move) * 0.5, затем контр-ход с шансом 0.7.
+   */
+  function pickBotMove(history) {
+    if (history && history.length) {
+      var weights = [1.0, 1.0, 1.0];
+      for (var i = 0; i < MOVE_KEYS.length; i++) {
+        weights[i] += countOf(history, MOVE_KEYS[i]) * 0.5;
+      }
+      var likelyPlayerMove = weightedPick(MOVE_KEYS, weights);
+      if (Math.random() < 0.7) return COUNTER[likelyPlayerMove];
+      return MOVE_KEYS[Math.floor(Math.random() * MOVE_KEYS.length)];
+    }
+    return MOVE_KEYS[Math.floor(Math.random() * MOVE_KEYS.length)];
+  }
+
+  function countOf(list, value) {
+    var total = 0;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] === value) total += 1;
+    }
+    return total;
+  }
+
+  function weightedPick(keys, weights) {
+    var total = 0;
+    var i;
+    for (i = 0; i < weights.length; i++) total += weights[i];
+    var roll = Math.random() * total;
+    for (i = 0; i < keys.length; i++) {
+      roll -= weights[i];
+      if (roll <= 0) return keys[i];
+    }
+    return keys[keys.length - 1];
+  }
+
+  // ------------------------------------------------------------------ хелперы DOM
+  function elem(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function button(label, className, handler) {
+    var node = elem('button', className || 'gw-btn', label);
+    node.type = 'button';
+    if (typeof handler === 'function') node.addEventListener('click', handler);
+    return node;
+  }
+
+  function row(children) {
+    var box = elem('div', 'gw-row');
+    for (var i = 0; i < children.length; i++) box.appendChild(children[i]);
+    return box;
+  }
+
+  function textPanel(lines, className) {
+    var panel = elem('div', className || 'gw-panel');
+    for (var i = 0; i < lines.length; i++) panel.appendChild(elem('div', null, lines[i]));
+    return panel;
+  }
+
+  function moveLabel(key) {
+    return MOVES[key].emoji + ' ' + MOVES[key].name;
+  }
+
+  // ---------------------------------------------------------------------- игра
+  var GAME = {
+    key: 'rps',
+    emoji: '✊',
+    title: 'Камень-ножницы-бумага',
+    description: 'Серия до 3 побед; бот подстраивается под ваши ходы',
+    rules: 'Играем до 3 побед.\n' +
+      'Бот запоминает ваши ходы и иногда подстраивается — не будьте предсказуемы 😉\n' +
+      'Раунд: ✊ бьёт ✌️, ✌️ бьёт ✋, ✋ бьёт ✊. Ничья — раунд переигрывается.\n' +
+      'Победа в серии: +40 🪙.',
+    mount: mount
+  };
+
+  function mount(root, api) {
+    if (!root || typeof root.appendChild !== 'function') {
+      return { destroy: function () {} };
+    }
+    api = api || {};
+
+    var view = elem('div', 'gw-panel');
+    root.appendChild(view);
+
+    var state = null;
+    var rewardGiven = false;
+
+    // ---------------------------------------------------------- мостик к api
+    function toast(text) {
+      if (typeof api.toast === 'function') api.toast(String(text));
+    }
+    function giveReward(payload) {
+      if (typeof api.reward === 'function') api.reward(payload);
+    }
+    function goBack() {
+      if (typeof api.back === 'function') api.back();
+    }
+    function balance() {
+      if (typeof api.balance !== 'function') return 0;
+      try {
+        var value = Number(api.balance());
+        return isFinite(value) ? value : 0;
+      } catch (err) {
+        return 0;
+      }
+    }
+
+    // ---------------------------------------------------------------- рендер
+    function clearView() {
+      view.textContent = '';
+    }
+
+    function newSeries() {
+      state = {
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        history: [],      // ходы игрока
+        botHistory: [],   // ходы бота (для истории раундов)
+        results: [],      // 'win' | 'lose' | 'draw' по раундам
+        rounds: 0,
+        last: null,
+        over: false,
+        won: false,
+        quit: false
+      };
+      rewardGiven = false;
+      render();
+    }
+
+    function roundNote(last) {
+      return MOVES[last.player].emoji + ' ты — ' + MOVES[last.bot].emoji + ' бот: ' +
+        RESULT_LABEL[last.result];
+    }
+
+    function coinsFor(won) {
+      return won ? 40 : 0;
+    }
+
+    function render() {
+      clearView();
+      if (!state) {
+        newSeries();
+        return;
+      }
+      var session = state;
+
+      view.appendChild(elem('div', 'gw-title', GAME.emoji + ' ' + GAME.title));
+      view.appendChild(elem('div', 'gw-desc', GAME.description));
+
+      if (session.quit) {
+        view.appendChild(elem('div', 'gw-status', '✊ Серия прервана.'));
+        view.appendChild(row([
+          button('▶️ Новая серия', 'gw-btn gw-primary', newSeries),
+          button('↩ В меню', 'gw-btn gw-ghost', goBack)
+        ]));
+        return;
+      }
+
+      var badges = elem('div', 'gw-row');
+      badges.appendChild(elem('span', 'gw-badge', 'Серия до ' + TARGET + ' побед'));
+      view.appendChild(badges);
+
+      var panel = elem('div', 'gw-panel');
+      panel.appendChild(elem('div', 'gw-status',
+        'Счёт — ты ' + session.wins + ' : ' + session.losses + ' бот (ничьих: ' + session.draws + ')'));
+      panel.appendChild(elem('div', 'gw-status',
+        'До победы осталось выиграть: ' + Math.max(0, TARGET - session.wins)));
+      if (session.last && !session.over) {
+        panel.appendChild(elem('div', 'gw-status', roundNote(session.last)));
+      }
+      view.appendChild(panel);
+
+      if (session.over) {
+        var finish = elem('div', 'gw-panel');
+        finish.appendChild(elem('div', 'gw-status',
+          session.won ? '🏆 Серия твоя!' : '🤖 Серия за ботом.'));
+        if (session.last) finish.appendChild(elem('div', 'gw-status', roundNote(session.last)));
+        finish.appendChild(elem('div', 'gw-status',
+          'Итог: ты ' + session.wins + ' : ' + session.losses + ' бот, ничьих ' + session.draws));
+        finish.appendChild(elem('div', 'gw-status',
+          'Награда: ' + coinsFor(session.won) + ' ' + COIN));
+        finish.appendChild(elem('div', 'gw-status', 'Баланс: ' + balance() + ' ' + COIN));
+        view.appendChild(finish);
+      }
+
+      var movesRow = elem('div', 'gw-row');
+      for (var i = 0; i < MOVE_KEYS.length; i++) {
+        (function (key) {
+          var node = button(moveLabel(key), 'gw-btn', function () { play(key); });
+          node.disabled = Boolean(session.over);
+          movesRow.appendChild(node);
+        })(MOVE_KEYS[i]);
+      }
+      view.appendChild(movesRow);
+
+      var actions = elem('div', 'gw-row');
+      if (!session.over) {
+        actions.appendChild(button('🏳️ Сдаться', 'gw-btn gw-ghost', quitSeries));
+      }
+      actions.appendChild(button('🔄 Новая серия', 'gw-btn gw-ghost', newSeries));
+      actions.appendChild(button('↩ В меню', 'gw-btn gw-ghost', goBack));
+      view.appendChild(actions);
+
+      if (session.results.length) {
+        var history = elem('div', 'gw-panel');
+        history.appendChild(elem('div', 'gw-desc', 'История ходов:'));
+        var historyRow = elem('div', 'gw-row');
+        for (var r = 0; r < session.results.length; r++) {
+          var result = session.results[r];
+          var mark = 'gw-badge' +
+            (result === 'win' ? ' gw-ok' : (result === 'lose' ? ' gw-bad' : ''));
+          historyRow.appendChild(elem('span', mark,
+            MOVES[session.history[r]].emoji + MOVES[session.botHistory[r]].emoji));
+        }
+        history.appendChild(historyRow);
+        view.appendChild(history);
+      }
+    }
+
+    // ---------------------------------------------------------------- события
+    function play(player) {
+      var session = state;
+      if (!session || session.over || session.quit) return;
+
+      var bot = pickBotMove(session.history);
+      session.history.push(player);
+      session.botHistory.push(bot);
+      session.rounds += 1;
+
+      var result = duel(player, bot);
+      if (result === 'win') {
+        session.wins += 1;
+      } else if (result === 'lose') {
+        session.losses += 1;
+      } else {
+        session.draws += 1;
+      }
+      session.results.push(result);
+      session.last = { player: player, bot: bot, result: result };
+      toast(RESULT_TOAST[result]);
+
+      if (session.wins >= TARGET || session.losses >= TARGET) {
+        finishSeries(session.wins >= TARGET);
+        return;
+      }
+      render();
+    }
+
+    function finishSeries(won) {
+      var session = state;
+      session.over = true;
+      session.won = Boolean(won);
+      if (!rewardGiven) {
+        rewardGiven = true;
+        if (session.won) {
+          giveReward({ coins: 40, win: true, points: 40 });
+        } else {
+          giveReward({ lose: true });
+        }
+      }
+      render();
+    }
+
+    function quitSeries() {
+      var session = state;
+      if (!session) return;
+      session.over = true;
+      session.quit = true;
+      toast('Серия прервана');
+      render();
+    }
+
+    newSeries();
+
+    return {
+      destroy: function () {
+        if (view.parentNode) view.parentNode.removeChild(view);
+      }
+    };
+  }
+
+  window.Games.rps = GAME;
+})();
+
+</script>
+  <script>
+/* 🎯 Угадай число — мини-игра для «Игрового зала».
+ *
+ * Классический скрипт: без import/export, без зависимостей, работает по file://.
+ * Регистрируется как window.Games.guess и монтируется в переданный root.
+ *
+ * Логика перенесена один в один из guess.py: три диапазона с лимитом попыток,
+ * подсказки «больше/меньше», награда зависит от того, как быстро угадали.
+ */
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ данные (из guess.py) */
+
+  // подпись, верхняя граница, лимит попыток, награда за победу
+  var RANGES = [
+    { label: '1–50', top: 50, limit: 12, base: 20 },
+    { label: '1–100', top: 100, limit: 16, base: 30 },
+    { label: '1–1000', top: 1000, limit: 24, base: 55 }
+  ];
+  var DEFAULT_RANGE = RANGES[1];
+  var MAX_HISTORY_ROWS = 24;
+
+  var RULES = [
+    'Выбери диапазон — я загадаю число в нём.',
+    'Вводи свои варианты в поле, я подскажу «больше» или «меньше».',
+    'Чем меньше попыток потратил, тем больше 🪙 (до 55 за диапазон 1–1000).',
+    '',
+    'Выход — кнопка «↩ В меню».'
+  ].join('\n');
+
+  /* ------------------------------------------------------------------ чистая логика */
+
+  /** Сравнение: 'low' | 'high' | 'hit'. Как check_guess() в guess.py. */
+  function checkGuess(secret, guess) {
+    if (guess === secret) return 'hit';
+    return guess < secret ? 'low' : 'high';
+  }
+
+  /** Награда: чем быстрее угадал, тем больше (минимум 1/4 базы). Как reward_for(). */
+  function rewardFor(limit, tries, base) {
+    var leftover = Math.max(0, limit - tries);
+    return Math.max(Math.floor(base / 4), Math.floor(base / 2) + leftover * 2);
+  }
+
+  /** Округление как в Python (half-to-even) — для progress() из engine/ui.py. */
+  function pyRound(value) {
+    var floor = Math.floor(value);
+    var diff = value - floor;
+    if (diff > 0.5) return floor + 1;
+    if (diff < 0.5) return floor;
+    return (floor % 2 === 0) ? floor : floor + 1;
+  }
+
+  /** Полоска «▰▰▱▱» как ui.progress(done, total). */
+  function progress(done, total, width) {
+    width = width || 10;
+    total = Math.max(1, Math.round(total));
+    var clamped = Math.min(Math.max(Math.round(done), 0), total);
+    var filled = pyRound(width * clamped / total);
+    var out = '';
+    for (var i = 0; i < width; i++) out += (i < filled) ? '▰' : '▱';
+    return out;
+  }
+
+  /* ------------------------------------------------------------------ мелкие утилиты */
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function call(fn, arg) {
+    if (typeof fn === 'function') {
+      try {
+        return fn(arg);
+      } catch (err) {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  function rangeConfig(top) {
+    for (var i = 0; i < RANGES.length; i++) {
+      if (RANGES[i].top === top) return RANGES[i];
+    }
+    return DEFAULT_RANGE;
+  }
+
+  /* ------------------------------------------------------------------ игра */
+
+  function mount(root, api) {
+    api = api || {};
+    root = root || document.body;
+    root.innerHTML = '';
+
+    var game = null;          // { top, limit, base, secret, tries, over, history }
+    var statusLines = [];
+
+    var badgeEl, statusEl, boardEl, inputEl, checkBtn;
+
+    function currentBalance() {
+      var value = call(api.balance);
+      if (typeof value !== 'number' || !isFinite(value)) return 0;
+      return Math.round(value);
+    }
+
+    function toast(text) {
+      call(api.toast, text);
+    }
+
+    /* ---------------------------------------------------------------- разметка */
+
+    function buildShell() {
+      root.appendChild(el('div', 'gw-title', '🎯 Угадай число'));
+      root.appendChild(el('div', 'gw-desc', GuessGame.description));
+
+      badgeEl = el('div', 'gw-badge', 'Раунд не начат');
+      root.appendChild(badgeEl);
+
+      var panel = el('div', 'gw-panel');
+      statusEl = el('div', 'gw-status');
+      panel.appendChild(statusEl);
+      boardEl = el('div');
+      panel.appendChild(boardEl);
+      root.appendChild(panel);
+
+      var backRow = el('div', 'gw-row');
+      var backBtn = el('button', 'gw-btn gw-ghost', '↩ В меню');
+      backBtn.type = 'button';
+      backBtn.addEventListener('click', function () { call(api.back); });
+      backRow.appendChild(backBtn);
+      root.appendChild(backRow);
+
+      var rulesPanel = el('div', 'gw-panel');
+      rulesPanel.appendChild(el('div', 'gw-title', 'Правила'));
+      var ul = el('ul', 'gw-rules');
+      RULES.split('\n').forEach(function (line) {
+        line = line.trim();
+        if (line) ul.appendChild(el('li', null, line));
+      });
+      rulesPanel.appendChild(ul);
+
+      var rewards = el('ul', 'gw-rules');
+      RANGES.forEach(function (range) {
+        rewards.appendChild(el('li', null, range.label + ': ' + range.limit +
+          ' попыток, награда до ' + rewardFor(range.limit, 1, range.base) + ' 🪙'));
+      });
+      rulesPanel.appendChild(rewards);
+      root.appendChild(rulesPanel);
+    }
+
+    function setStatus(lines) {
+      statusLines = Array.isArray(lines) ? lines.slice(0) : [lines];
+      paintStatus();
+    }
+
+    function paintStatus() {
+      statusEl.textContent = '';
+      if (!statusLines.length) return;
+      statusLines.forEach(function (line) {
+        statusEl.appendChild(el('div', null, line));
+      });
+    }
+
+    /* ---------------------------------------------------------------- выбор диапазона */
+
+    function renderPicker() {
+      boardEl.innerHTML = '';
+      badgeEl.textContent = 'Раунд не начат';
+      inputEl = null;
+      checkBtn = null;
+
+      boardEl.appendChild(el('div', 'gw-desc', 'Выбери диапазон, в котором я загадаю число:'));
+      var grid = el('div', 'gw-grid');
+      grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(160px, 1fr))';
+      RANGES.forEach(function (range) {
+        var btn = el('button', 'gw-btn gw-primary',
+          range.label + ' · ' + range.limit + ' попыток · до ' + range.base + ' 🪙');
+        btn.type = 'button';
+        btn.setAttribute('data-top', String(range.top));
+        btn.addEventListener('click', function () { begin(range.top); });
+        grid.appendChild(btn);
+      });
+      boardEl.appendChild(grid);
+    }
+
+    /* ---------------------------------------------------------------- партия */
+
+    function begin(top) {
+      var config = rangeConfig(top);
+      game = {
+        top: config.top,
+        limit: config.limit,
+        base: config.base,
+        secret: 1 + Math.floor(Math.random() * config.top),
+        tries: 0,
+        over: false,
+        history: []
+      };
+      call(api.toast, 'Погнали!');
+      setStatus([
+        '🎯 Я загадал число от 1 до ' + game.top + '.',
+        'Попыток: ' + game.limit + '. Вводи вариант в поле.'
+      ]);
+      renderGame();
+      if (inputEl) inputEl.focus();
+    }
+
+    function renderGame() {
+      boardEl.innerHTML = '';
+      badgeEl.textContent = 'Попыток: ' + game.tries + ' / ' + game.limit;
+
+      var info = el('div', 'gw-row');
+      info.appendChild(el('span', 'gw-badge', 'Диапазон: 1–' + game.top));
+      info.appendChild(el('span', 'gw-badge', 'Осталось: ' +
+        Math.max(0, game.limit - game.tries) + ' ' + progress(Math.max(0, game.limit - game.tries), game.limit)));
+      boardEl.appendChild(info);
+
+      var inputRow = el('div', 'gw-row');
+      inputEl = el('input', 'gw-input');
+      inputEl.type = 'text';
+      inputEl.inputMode = 'numeric';
+      inputEl.autocomplete = 'off';
+      inputEl.placeholder = 'Число от 1 до ' + game.top;
+      inputEl.title = 'Твой вариант';
+      inputEl.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          submitGuess();
+        }
+      });
+      inputRow.appendChild(inputEl);
+
+      checkBtn = el('button', 'gw-btn gw-primary', 'Проверить');
+      checkBtn.type = 'button';
+      checkBtn.setAttribute('data-act', 'check');
+      checkBtn.addEventListener('click', submitGuess);
+      inputRow.appendChild(checkBtn);
+
+      var againBtn = el('button', 'gw-btn', '🔁 Ещё раз');
+      againBtn.type = 'button';
+      againBtn.addEventListener('click', function () { begin(game.top); });
+      inputRow.appendChild(againBtn);
+
+      var otherBtn = el('button', 'gw-btn gw-ghost', '🎯 Другой диапазон');
+      otherBtn.type = 'button';
+      otherBtn.addEventListener('click', function () {
+        game = null;
+        setStatus('Выбери диапазон — и я загадаю новое число.');
+        renderPicker();
+      });
+      inputRow.appendChild(otherBtn);
+      boardEl.appendChild(inputRow);
+
+      if (game.over) {
+        inputEl.disabled = true;
+        checkBtn.disabled = true;
+      }
+
+      renderHistory();
+    }
+
+    function renderHistory() {
+      var panel = el('div', 'gw-panel');
+      panel.appendChild(el('div', 'gw-desc', 'История попыток'));
+      if (!game.history.length) {
+        panel.appendChild(el('div', 'gw-status', 'Пока ни одной попытки.'));
+        boardEl.appendChild(panel);
+        return;
+      }
+      var table = el('table', 'gw-table');
+      var head = el('tr');
+      ['№', 'Число', 'Подсказка', 'Осталось'].forEach(function (title) {
+        head.appendChild(el('th', null, title));
+      });
+      table.appendChild(head);
+
+      var rows = game.history.slice(-MAX_HISTORY_ROWS);
+      rows.forEach(function (item) {
+        var tr = el('tr');
+        tr.appendChild(el('td', null, item.n));
+        tr.appendChild(el('td', null, item.guess));
+        var hintCell = el('td', null, item.hint);
+        if (item.result === 'hit') hintCell.className = 'gw-badge gw-badge-good';
+        tr.appendChild(hintCell);
+        tr.appendChild(el('td', 'gw-num', item.left));
+        table.appendChild(tr);
+      });
+      panel.appendChild(table);
+      boardEl.appendChild(panel);
+    }
+
+    /* ---------------------------------------------------------------- ход */
+
+    function parseGuess(raw) {
+      var text = String(raw === undefined || raw === null ? '' : raw).trim();
+      if (!/^[+-]?\d+$/.test(text)) return null;
+      return parseInt(text, 10);
+    }
+
+    function submitGuess() {
+      if (!game || game.over || !inputEl) return;
+
+      var guess = parseGuess(inputEl.value);
+      if (guess === null) {
+        toast('Нужно целое число. Например: 42');
+        return;
+      }
+
+      game.tries += 1;
+      var tries = game.tries;
+      var result = checkGuess(game.secret, guess);
+      var left = Math.max(0, game.limit - tries);
+
+      if (result === 'hit') {
+        var coins = rewardFor(game.limit, tries, game.base);
+        var points = Math.max(1, game.limit - tries);
+        game.over = true;
+        game.history.push({
+          n: tries, guess: guess, hint: '🎯 в точку', left: left, result: result
+        });
+        call(api.reward, { coins: coins, win: true, points: points });
+        renderGame();
+        setStatus([
+          '🎉 В точку! Это ' + game.secret + '.',
+          'Попыток: ' + tries + ' из ' + game.limit + '.',
+          'Награда: ' + coins + ' 🪙 (+' + points + ' очков)',
+          'Баланс: ' + currentBalance() + ' 🪙'
+        ]);
+        toast('🎉 Угадал с ' + tries + ' попытки!');
+        return;
+      }
+
+      if (tries >= game.limit) {
+        game.over = true;
+        game.history.push({
+          n: tries, guess: guess, hint: 'мимо', left: 0, result: result
+        });
+        call(api.reward, { lose: true, points: 0 });
+        renderGame();
+        setStatus([
+          '😿 Попытки кончились. Я загадал ' + game.secret + '.',
+          'Баланс: ' + currentBalance() + ' 🪙'
+        ]);
+        toast('😿 Не угадал: было ' + game.secret);
+        return;
+      }
+
+      var low = (result === 'low');
+      game.history.push({
+        n: tries,
+        guess: guess,
+        hint: low ? '📈 больше' : '📉 меньше',
+        left: left,
+        result: result
+      });
+      renderGame();
+      setStatus([
+        (low ? '📈 Моё число больше, чем ' : '📉 Моё число меньше, чем ') + guess + '.',
+        'Осталось попыток: ' + left + ' ' + progress(left, game.limit)
+      ]);
+      if (inputEl) {
+        inputEl.value = '';
+        inputEl.focus();
+      }
+    }
+
+    buildShell();
+    setStatus('Выбери диапазон — и я загадаю число.');
+    renderPicker();
+
+    return {
+      destroy: function () {
+        game = null;
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  /* ------------------------------------------------------------------ регистрация */
+
+  var GuessGame = {
+    key: 'guess',
+    emoji: '🎯',
+    title: 'Угадай число',
+    description: 'Три диапазона, награда зависит от числа попыток',
+    rules: RULES,
+    mount: mount,
+    ranges: RANGES,
+    checkGuess: checkGuess,
+    rewardFor: rewardFor,
+    progress: progress
+  };
+
+  window.Games = window.Games || {};
+  window.Games.guess = GuessGame;
+})();
+
+</script>
+  <script>
+/* 🎲 Кости — мини-игра для «Игрового зала».
+ *
+ * Классический скрипт: без import/export, без зависимостей, работает по file://.
+ * Регистрируется как window.Games.dice и монтируется в переданный root.
+ *
+ * Логика перенесена один в один из dice.py: ставка делается «на сумму двух
+ * кубиков», выплата задана порогами (8–9 → x2, 10 → x3, 11 → x4, 12 → x5).
+ * Отдельных режимов «больше/меньше/точная сумма» в исходной игре нет.
+ */
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ данные (из dice.py) */
+
+  var FACES = { 1: '⚀', 2: '⚁', 3: '⚂', 4: '⚃', 5: '⚄', 6: '⚅' };
+  var BETS = [10, 25, 50, 100];
+
+  // порог суммы -> коэффициент выплаты (включая возврат ставки)
+  var PAYOUTS = [[12, 5], [11, 4], [10, 3], [9, 2], [8, 2]];
+  var MIN_BET = 10;
+
+  var MAX_HISTORY = 8;
+
+  var RULES = [
+    'Ставишь монеты, кидаю два кубика.',
+    'Сумма 8–9 → x2, 10 → x3, 11 → x4, 12 → x5.',
+    'Меньше 8 — ставка уходит казино 😈',
+    '',
+    'Стартовый капитал — 100 🪙, так что не увлекайся.'
+  ].join('\n');
+
+  /* ------------------------------------------------------------------ чистая логика */
+
+  function multiplier(sum) {
+    for (var i = 0; i < PAYOUTS.length; i++) {
+      if (sum >= PAYOUTS[i][0]) return PAYOUTS[i][1];
+    }
+    return 0;
+  }
+
+  /** Сколько монет получит игрок (0 — проигрыш). Как payout() в dice.py. */
+  function payout(sum, bet) {
+    return bet * multiplier(sum);
+  }
+
+  /** Два кубика: [1..6, 1..6]. Как roll() в dice.py. */
+  function roll() {
+    return [
+      1 + Math.floor(Math.random() * 6),
+      1 + Math.floor(Math.random() * 6)
+    ];
+  }
+
+  /* ------------------------------------------------------------------ мелкие утилиты */
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function call(fn, arg) {
+    if (typeof fn === 'function') {
+      try {
+        return fn(arg);
+      } catch (err) {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  /** Формат «%+d» из исходника. */
+  function signed(value) {
+    return (value > 0 ? '+' : '') + value;
+  }
+
+  function faceEl() {
+    var node = el('div', 'gw-cell');
+    node.style.fontSize = '40px';
+    node.style.lineHeight = '1.1';
+    node.style.minWidth = '64px';
+    node.style.textAlign = 'center';
+    node.style.cursor = 'default';
+    return node;
+  }
+
+  /* ------------------------------------------------------------------ игра */
+
+  function mount(root, api) {
+    api = api || {};
+    root = root || document.body;
+    root.innerHTML = '';
+
+    var bet = 25;
+    var rolls = 0;
+    var last = null;          // последний бросок: { dice, sum, win, bet }
+    var history = [];
+    var broke = false;
+
+    var faceEls = [];
+    var sumEl, statusEl, badgeEl;
+    var betInput, rollBtn, rollRow, historyBox, allGamesBtn, betBtns = [];
+
+    function currentBalance() {
+      var value = call(api.balance);
+      if (typeof value !== 'number' || !isFinite(value)) return 0;
+      return Math.round(value);
+    }
+
+    function toast(text) {
+      call(api.toast, text);
+    }
+
+    /* ---------------------------------------------------------------- разметка */
+
+    function buildShell() {
+      root.appendChild(el('div', 'gw-title', '🎲 Кости'));
+      root.appendChild(el('div', 'gw-desc', DiceGame.description));
+
+      badgeEl = el('div', 'gw-badge', 'Баланс: 0 🪙');
+      root.appendChild(badgeEl);
+
+      var panel = el('div', 'gw-panel');
+      var diceRow = el('div', 'gw-row');
+      for (var i = 0; i < 2; i++) {
+        var face = faceEl();
+        face.textContent = '❔';
+        faceEls.push(face);
+        diceRow.appendChild(face);
+      }
+      sumEl = el('div', 'gw-title', 'Сумма: —');
+      diceRow.appendChild(sumEl);
+      panel.appendChild(diceRow);
+      root.appendChild(panel);
+
+      statusEl = el('div', 'gw-status', 'Выбери ставку и бросай кубики.');
+      root.appendChild(statusEl);
+
+      var betRow = el('div', 'gw-row');
+      betRow.appendChild(el('span', 'gw-desc', 'Ставка:'));
+      for (var b = 0; b < BETS.length; b++) {
+        (function (value) {
+          var btn = el('button', 'gw-btn', value + ' 🪙');
+          btn.type = 'button';
+          btn.setAttribute('data-bet', String(value));
+          btn.addEventListener('click', function () { selectBet(value, false); });
+          betBtns.push(btn);
+          betRow.appendChild(btn);
+        })(BETS[b]);
+      }
+
+      betInput = el('input', 'gw-input');
+      betInput.type = 'text';
+      betInput.inputMode = 'numeric';
+      betInput.autocomplete = 'off';
+      betInput.title = 'Своя ставка';
+      betInput.placeholder = 'своя';
+      betInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          applyCustomBet();
+        }
+      });
+      betRow.appendChild(betInput);
+
+      var customBtn = el('button', 'gw-btn gw-ghost', 'Поставить');
+      customBtn.type = 'button';
+      customBtn.addEventListener('click', applyCustomBet);
+      betRow.appendChild(customBtn);
+      root.appendChild(betRow);
+
+      rollRow = el('div', 'gw-row');
+      rollBtn = el('button', 'gw-btn gw-primary', '🎲 Бросить');
+      rollBtn.type = 'button';
+      rollBtn.setAttribute('data-act', 'roll');
+      rollBtn.addEventListener('click', doRoll);
+      rollRow.appendChild(rollBtn);
+
+      allGamesBtn = el('button', 'gw-btn', '🎮 Все игры');
+      allGamesBtn.type = 'button';
+      allGamesBtn.style.display = 'none';
+      allGamesBtn.addEventListener('click', function () { call(api.back); });
+      rollRow.appendChild(allGamesBtn);
+
+      var backBtn = el('button', 'gw-btn gw-ghost', '↩ В меню');
+      backBtn.type = 'button';
+      backBtn.addEventListener('click', function () { call(api.back); });
+      rollRow.appendChild(backBtn);
+      root.appendChild(rollRow);
+
+      var historyPanel = el('div', 'gw-panel');
+      historyPanel.appendChild(el('div', 'gw-desc', 'История бросков'));
+      historyBox = el('div');
+      historyPanel.appendChild(historyBox);
+      root.appendChild(historyPanel);
+
+      var rulesPanel = el('div', 'gw-panel');
+      rulesPanel.appendChild(el('div', 'gw-title', 'Правила'));
+      var ul = el('ul', 'gw-rules');
+      RULES.split('\n').forEach(function (line) {
+        line = line.trim();
+        if (line) ul.appendChild(el('li', null, line));
+      });
+      rulesPanel.appendChild(ul);
+      root.appendChild(rulesPanel);
+    }
+
+    /* ---------------------------------------------------------------- отрисовка */
+
+    function render() {
+      var balance = currentBalance();
+      badgeEl.textContent = 'Баланс: ' + balance + ' 🪙';
+
+      if (last) {
+        faceEls[0].textContent = FACES[last.dice[0]];
+        faceEls[1].textContent = FACES[last.dice[1]];
+        sumEl.textContent = 'Сумма: ' + last.sum;
+      } else {
+        faceEls[0].textContent = '❔';
+        faceEls[1].textContent = '❔';
+        sumEl.textContent = 'Сумма: —';
+      }
+
+      for (var i = 0; i < betBtns.length; i++) {
+        var value = Number(betBtns[i].getAttribute('data-bet'));
+        betBtns[i].className = (value === bet) ? 'gw-btn gw-primary' : 'gw-btn';
+        betBtns[i].disabled = broke;
+      }
+
+      if (betInput) betInput.value = String(bet);
+      if (rollBtn) {
+        rollBtn.textContent = '🎲 Бросить (ставка ' + bet + ')';
+        rollBtn.disabled = broke;
+      }
+      if (allGamesBtn) allGamesBtn.style.display = broke ? '' : 'none';
+
+      historyBox.innerHTML = '';
+      if (!history.length) {
+        historyBox.appendChild(el('div', 'gw-status', 'Пока ни одного броска.'));
+      } else {
+        history.forEach(function (item) {
+          var row = el('div', 'gw-row');
+          var cls = item.win ? 'gw-badge gw-badge-good' : 'gw-badge gw-badge-bad';
+          var text = FACES[item.dice[0]] + ' ' + FACES[item.dice[1]] + ' = ' + item.sum +
+            ' · ставка ' + item.bet + ' 🪙 · ' + (item.win ? signed(item.win - item.bet) : '−' + item.bet);
+          row.appendChild(el('span', cls, text));
+          historyBox.appendChild(row);
+        });
+      }
+    }
+
+    function setStatus(lines) {
+      statusEl.textContent = '';
+      var list = Array.isArray(lines) ? lines : [lines];
+      list.forEach(function (line) {
+        statusEl.appendChild(el('div', null, line));
+      });
+    }
+
+    /* ---------------------------------------------------------------- действия */
+
+    function selectBet(value, silent) {
+      var balance = currentBalance();
+      if (typeof value !== 'number' || !isFinite(value) || Math.floor(value) !== value) {
+        toast('Ставка — целое число 🪙');
+        return;
+      }
+      if (value < MIN_BET) {
+        toast('Минимальная ставка — ' + MIN_BET + ' 🪙');
+        return;
+      }
+      if (value > balance) {
+        toast('Недостаточно монет: у тебя ' + balance + ' 🪙');
+        return;
+      }
+      bet = value;
+      if (!silent) toast('Ставка: ' + bet);
+      render();
+    }
+
+    function applyCustomBet() {
+      var raw = (betInput.value || '').trim();
+      if (!/^[+-]?\d+$/.test(raw)) {
+        toast('Нужно целое число, например 30');
+        return;
+      }
+      selectBet(parseInt(raw, 10), false);
+    }
+
+    function doRoll() {
+      if (broke) return;
+
+      var balance = currentBalance();
+      if (bet > balance) {
+        toast('Не хватает монет на ставку ' + bet);
+        return;
+      }
+      if (call(api.spend, bet) === false) {
+        toast('Не хватает монет на ставку ' + bet);
+        return;
+      }
+
+      var dice = roll();
+      var sum = dice[0] + dice[1];
+      var win = payout(sum, bet);
+      rolls += 1;
+      last = { dice: dice, sum: sum, win: win, bet: bet };
+
+      history.unshift(last);
+      if (history.length > MAX_HISTORY) history.pop();
+
+      call(api.reward, { coins: win, win: win > 0, lose: win === 0, points: sum });
+
+      if (win) {
+        toast('Выпало ' + sum + ': выигрыш ' + win + ' 🪙');
+      } else {
+        toast('Выпало ' + sum + ': мимо');
+      }
+
+      render();
+
+      var lines = [
+        'Кубики: ' + FACES[dice[0]] + ' ' + FACES[dice[1]] + ' = ' + sum
+      ];
+      if (win) {
+        lines.push('💰 Выигрыш: ' + win + ' 🪙 (чистыми ' + signed(win - bet) + ')');
+      } else {
+        lines.push('😢 Мимо. Ставка потеряна: −' + bet);
+      }
+      lines.push('Баланс: ' + currentBalance() + ' 🪙');
+
+      if (currentBalance() < MIN_BET) {
+        broke = true;
+        setStatus('💸 Ты на мели. Заходи в другие игры — там монеты дают без ставок.');
+        render();
+        return;
+      }
+
+      lines.push('Бросков за сессию: ' + rolls);
+      setStatus(lines);
+      render();
+    }
+
+    buildShell();
+    setStatus('Ставка: ' + bet + ' 🪙. Выбери другую или бросай кубики.');
+    render();
+
+    return {
+      destroy: function () {
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  /* ------------------------------------------------------------------ регистрация */
+
+  var DiceGame = {
+    key: 'dice',
+    emoji: '🎲',
+    title: 'Кости',
+    description: 'Ставка на сумму двух кубиков, выплаты до x5',
+    rules: RULES,
+    mount: mount,
+    bets: BETS,
+    minBet: MIN_BET,
+    payout: payout,
+    multiplier: multiplier,
+    faces: FACES
+  };
+
+  window.Games = window.Games || {};
+  window.Games.dice = DiceGame;
+})();
+
+</script>
+  <script>
+/* 🎰 Слоты — мини-игра для «Игрового зала».
+ *
+ * Классический скрипт: без import/export, без зависимостей, работает по file://.
+ * Регистрируется как window.Games.slots и монтируется в переданный root.
+ *
+ * Логика перенесена один в один из slots.py: три барабана со взвешенными
+ * символами, три одинаковых — выплата по таблице, пара — возврат ставки.
+ */
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ данные (из slots.py) */
+
+  // символ, вес выпадения, множитель за три подряд
+  var SYMBOLS = [
+    ['🍒', 30, 4],
+    ['🍋', 25, 5],
+    ['🍇', 20, 7],
+    ['🔔', 14, 10],
+    ['⭐', 7, 15],
+    ['7️⃣', 4, 25]
+  ];
+
+  var MULT = {};
+  var WEIGHTS = [];
+  var NAMES = [];
+  (function () {
+    for (var i = 0; i < SYMBOLS.length; i++) {
+      NAMES.push(SYMBOLS[i][0]);
+      WEIGHTS.push(SYMBOLS[i][1]);
+      MULT[SYMBOLS[i][0]] = SYMBOLS[i][2];
+    }
+  })();
+
+  var BETS = [10, 25, 50, 100];
+  var MIN_BET = 10;
+  var MAX_HISTORY = 6;
+  var UNKNOWN = '❔';
+
+  // длительность прокрутки: 0.6–1 c (последний барабан останавливается ~на 0.78 c)
+  var STOP_DELAYS = [400, 580, 780];
+  var TICK_MS = 70;
+
+  function payoutTable() {
+    return SYMBOLS.map(function (item) {
+      return item[0] + item[0] + item[0] + ' ×' + item[2];
+    }).join(' · ');
+  }
+
+  var RULES = [
+    'Крутишь барабаны за ставку.',
+    'Три одинаковых символа — выплата по таблице, пара символов — возврат ставки.',
+    '',
+    'Таблица: ' + payoutTable()
+  ].join('\n');
+
+  /* ------------------------------------------------------------------ чистая логика */
+
+  function randomSymbol() {
+    var total = 0;
+    var i;
+    for (i = 0; i < WEIGHTS.length; i++) total += WEIGHTS[i];
+    var roll = Math.random() * total;
+    for (i = 0; i < NAMES.length; i++) {
+      roll -= WEIGHTS[i];
+      if (roll < 0) return NAMES[i];
+    }
+    return NAMES[NAMES.length - 1];
+  }
+
+  /** Три символа. Как spin() в slots.py. */
+  function spin() {
+    return [randomSymbol(), randomSymbol(), randomSymbol()];
+  }
+
+  /** Выплата за результат вращения. Как prize() в slots.py. */
+  function prize(reels, bet) {
+    bet = Math.round(bet) || 0;
+    if (reels[0] === reels[1] && reels[1] === reels[2]) {
+      return bet * MULT[reels[0]];
+    }
+    if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) {
+      var pair = (reels[0] === reels[1]) ? reels[1] : reels[0];
+      return MULT[pair] >= 10 ? bet * 2 : bet;
+    }
+    return 0;
+  }
+
+  /** Индексы барабанов, которые сложились в выигрышную линию. */
+  function winningIndexes(reels) {
+    if (reels[0] === reels[1] && reels[1] === reels[2]) return [0, 1, 2];
+    if (reels[0] === reels[1]) return [0, 1];
+    if (reels[1] === reels[2]) return [1, 2];
+    if (reels[0] === reels[2]) return [0, 2];
+    return [];
+  }
+
+  /* ------------------------------------------------------------------ мелкие утилиты */
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function call(fn, arg) {
+    if (typeof fn === 'function') {
+      try {
+        return fn(arg);
+      } catch (err) {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  /** Формат «%+d» из исходника. */
+  function signed(value) {
+    return (value > 0 ? '+' : '') + value;
+  }
+
+  /* ------------------------------------------------------------------ игра */
+
+  function mount(root, api) {
+    api = api || {};
+    root = root || document.body;
+    root.innerHTML = '';
+
+    var bet = 25;
+    var reels = [UNKNOWN, UNKNOWN, UNKNOWN];
+    var stopped = [false, false, false];
+    var history = [];
+    var spinning = false;
+    var broke = false;
+
+    var spinTimer = null;
+    var timers = [];
+
+    var reelEls = [];
+    var resultEl, statusEl, badgeEl;
+    var spinBtn, betInput, historyBox, allGamesBtn, betBtns = [];
+
+    function currentBalance() {
+      var value = call(api.balance);
+      if (typeof value !== 'number' || !isFinite(value)) return 0;
+      return Math.round(value);
+    }
+
+    function toast(text) {
+      call(api.toast, text);
+    }
+
+    function clearTimers() {
+      if (spinTimer) {
+        clearInterval(spinTimer);
+        spinTimer = null;
+      }
+      for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+      timers = [];
+      spinning = false;
+    }
+
+    /* ---------------------------------------------------------------- разметка */
+
+    function buildShell() {
+      root.appendChild(el('div', 'gw-title', '🎰 Слоты'));
+      root.appendChild(el('div', 'gw-desc', SlotsGame.description));
+
+      badgeEl = el('div', 'gw-badge', 'Баланс: 0 🪙');
+      root.appendChild(badgeEl);
+
+      var panel = el('div', 'gw-panel');
+      var drumRow = el('div', 'gw-row');
+      for (var i = 0; i < 3; i++) {
+        var cell = el('div', 'gw-cell', UNKNOWN);
+        cell.style.fontSize = '40px';
+        cell.style.lineHeight = '1.2';
+        cell.style.minWidth = '72px';
+        cell.style.textAlign = 'center';
+        cell.style.cursor = 'default';
+        reelEls.push(cell);
+        drumRow.appendChild(cell);
+      }
+      panel.appendChild(drumRow);
+      resultEl = el('div', 'gw-status', 'Крути барабаны — три в ряд платят по таблице.');
+      panel.appendChild(resultEl);
+      root.appendChild(panel);
+
+      statusEl = el('div', 'gw-status', '');
+      root.appendChild(statusEl);
+
+      var betRow = el('div', 'gw-row');
+      betRow.appendChild(el('span', 'gw-desc', 'Ставка:'));
+      for (var b = 0; b < BETS.length; b++) {
+        (function (value) {
+          var btn = el('button', 'gw-btn', value + ' 🪙');
+          btn.type = 'button';
+          btn.setAttribute('data-bet', String(value));
+          btn.addEventListener('click', function () { selectBet(value, false); });
+          betBtns.push(btn);
+          betRow.appendChild(btn);
+        })(BETS[b]);
+      }
+
+      betInput = el('input', 'gw-input');
+      betInput.type = 'text';
+      betInput.inputMode = 'numeric';
+      betInput.autocomplete = 'off';
+      betInput.title = 'Своя ставка';
+      betInput.placeholder = 'своя';
+      betInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          applyCustomBet();
+        }
+      });
+      betRow.appendChild(betInput);
+
+      var customBtn = el('button', 'gw-btn gw-ghost', 'Поставить');
+      customBtn.type = 'button';
+      customBtn.addEventListener('click', applyCustomBet);
+      betRow.appendChild(customBtn);
+      root.appendChild(betRow);
+
+      var actionRow = el('div', 'gw-row');
+      spinBtn = el('button', 'gw-btn gw-primary', '🎰 Крутить');
+      spinBtn.type = 'button';
+      spinBtn.setAttribute('data-act', 'spin');
+      spinBtn.addEventListener('click', doSpin);
+      actionRow.appendChild(spinBtn);
+
+      allGamesBtn = el('button', 'gw-btn', '🎮 Все игры');
+      allGamesBtn.type = 'button';
+      allGamesBtn.style.display = 'none';
+      allGamesBtn.addEventListener('click', function () { call(api.back); });
+      actionRow.appendChild(allGamesBtn);
+
+      var backBtn = el('button', 'gw-btn gw-ghost', '↩ В меню');
+      backBtn.type = 'button';
+      backBtn.addEventListener('click', function () { call(api.back); });
+      actionRow.appendChild(backBtn);
+      root.appendChild(actionRow);
+
+      var historyPanel = el('div', 'gw-panel');
+      historyPanel.appendChild(el('div', 'gw-desc', 'История вращений'));
+      historyBox = el('div');
+      historyPanel.appendChild(historyBox);
+      root.appendChild(historyPanel);
+
+      var tablePanel = el('div', 'gw-panel');
+      tablePanel.appendChild(el('div', 'gw-title', 'Таблица выплат'));
+      var table = el('table', 'gw-table');
+      var head = el('tr');
+      head.appendChild(el('th', null, 'Символы'));
+      head.appendChild(el('th', 'gw-num', 'Выплата'));
+      table.appendChild(head);
+      SYMBOLS.forEach(function (item) {
+        var tr = el('tr');
+        tr.appendChild(el('td', null, item[0] + item[0] + item[0]));
+        tr.appendChild(el('td', 'gw-num', '×' + item[2]));
+        table.appendChild(tr);
+      });
+      tablePanel.appendChild(table);
+      tablePanel.appendChild(el('div', 'gw-desc', 'Пара любых символов — возврат ставки (🔔, ⭐ и 7️⃣ — x2).'));
+      root.appendChild(tablePanel);
+
+      var rulesPanel = el('div', 'gw-panel');
+      rulesPanel.appendChild(el('div', 'gw-title', 'Правила'));
+      var ul = el('ul', 'gw-rules');
+      RULES.split('\n').forEach(function (line) {
+        line = line.trim();
+        if (line) ul.appendChild(el('li', null, line));
+      });
+      rulesPanel.appendChild(ul);
+      root.appendChild(rulesPanel);
+    }
+
+    /* ---------------------------------------------------------------- отрисовка */
+
+    function paint(list, markWin) {
+      var winners = markWin ? winningIndexes(list) : [];
+      for (var i = 0; i < 3; i++) {
+        reelEls[i].textContent = list[i];
+        var cls = 'gw-cell';
+        if (winners.indexOf(i) !== -1) cls += ' gw-ok';
+        else if (markWin) cls += ' gw-bad';
+        reelEls[i].className = cls;
+      }
+    }
+
+    function renderReels() {
+      for (var i = 0; i < 3; i++) reelEls[i].textContent = reels[i];
+    }
+
+    function render() {
+      var balance = currentBalance();
+      badgeEl.textContent = 'Баланс: ' + balance + ' 🪙';
+
+      for (var i = 0; i < betBtns.length; i++) {
+        var value = Number(betBtns[i].getAttribute('data-bet'));
+        betBtns[i].className = (value === bet) ? 'gw-btn gw-primary' : 'gw-btn';
+        betBtns[i].disabled = spinning || broke;
+      }
+
+      if (betInput) betInput.value = String(bet);
+      if (spinBtn) {
+        spinBtn.textContent = spinning ? '🎰 Крутится…' : '🎰 Крутить (' + bet + ' 🪙)';
+        spinBtn.disabled = spinning || broke;
+      }
+      if (allGamesBtn) allGamesBtn.style.display = broke ? '' : 'none';
+
+      historyBox.innerHTML = '';
+      if (!history.length) {
+        historyBox.appendChild(el('div', 'gw-status', 'Пока ни одного вращения.'));
+      } else {
+        history.forEach(function (item) {
+          var row = el('div', 'gw-row');
+          var cls = item.win > item.bet ? 'gw-badge gw-badge-good' : 'gw-badge';
+          if (item.win === 0) cls = 'gw-badge gw-badge-bad';
+          var text = item.reels.join(' ') + ' · ставка ' + item.bet + ' 🪙 · ' +
+            (item.win ? ('+' + item.win) : '0');
+          row.appendChild(el('span', cls, text));
+          historyBox.appendChild(row);
+        });
+      }
+    }
+
+    function setStatus(lines) {
+      statusEl.textContent = '';
+      var list = Array.isArray(lines) ? lines : [lines];
+      list.forEach(function (line) {
+        statusEl.appendChild(el('div', null, line));
+      });
+    }
+
+    function setResult(lines) {
+      resultEl.textContent = '';
+      var list = Array.isArray(lines) ? lines : [lines];
+      list.forEach(function (line) {
+        resultEl.appendChild(el('div', null, line));
+      });
+    }
+
+    /* ---------------------------------------------------------------- действия */
+
+    function selectBet(value, silent) {
+      if (spinning) return;
+      var balance = currentBalance();
+      if (typeof value !== 'number' || !isFinite(value) || Math.floor(value) !== value) {
+        toast('Ставка — целое число 🪙');
+        return;
+      }
+      if (value < MIN_BET) {
+        toast('Минимальная ставка — ' + MIN_BET + ' 🪙');
+        return;
+      }
+      if (value > balance) {
+        toast('Мало монет: у тебя ' + balance + ' 🪙');
+        return;
+      }
+      bet = value;
+      if (!silent) toast('Ставка: ' + bet);
+      render();
+    }
+
+    function applyCustomBet() {
+      var raw = (betInput.value || '').trim();
+      if (!/^[+-]?\d+$/.test(raw)) {
+        toast('Нужно целое число, например 30');
+        return;
+      }
+      selectBet(parseInt(raw, 10), false);
+    }
+
+    function doSpin() {
+      if (spinning || broke) return;
+
+      var balance = currentBalance();
+      if (bet > balance) {
+        toast('Не хватает монет на ставку ' + bet);
+        return;
+      }
+      if (call(api.spend, bet) === false) {
+        toast('Не хватает монет на ставку ' + bet);
+        return;
+      }
+
+      var result = spin();
+      var win = prize(result, bet);
+      var visual = [randomSymbol(), randomSymbol(), randomSymbol()];
+      var flags = [false, false, false];
+
+      spinning = true;
+      stopped = flags;
+      setStatus('Барабаны крутятся…');
+      render();
+
+      spinTimer = setInterval(function () {
+        for (var i = 0; i < 3; i++) {
+          if (!flags[i]) visual[i] = randomSymbol();
+        }
+        paint(visual, false);
+      }, TICK_MS);
+
+      for (var k = 0; k < 3; k++) {
+        (function (index) {
+          timers.push(setTimeout(function () {
+            flags[index] = true;
+            visual[index] = result[index];
+            paint(visual, index === 2);
+            if (index === 2) finishSpin(result, win, bet);
+          }, STOP_DELAYS[index]));
+        })(k);
+      }
+    }
+
+    function finishSpin(result, win, paidBet) {
+      if (spinTimer) {
+        clearInterval(spinTimer);
+        spinTimer = null;
+      }
+      spinning = false;
+      reels = result.slice(0);
+      stopped = [true, true, true];
+      paint(reels, true);
+
+      call(api.reward, {
+        coins: win,
+        win: win > paidBet,
+        lose: win < paidBet,
+        points: win
+      });
+
+      var lines = [];
+      if (win > paidBet) {
+        lines.push('🎉 ТРИ В РЯД! ' + result.join(' '));
+        lines.push('Выигрыш: ' + win + ' 🪙 (чистыми ' + signed(win - paidBet) + ')');
+      } else if (win === paidBet) {
+        lines.push('🤝 Пара символов — ставка вернулась.');
+      } else if (win) {
+        lines.push('🙂 Пара символов, но мелкая: ' + win + ' 🪙 (чистыми ' + signed(win - paidBet) + ')');
+      } else {
+        lines.push('😢 Пусто. Ставка потеряна: −' + paidBet);
+      }
+      lines.push('Баланс: ' + currentBalance() + ' 🪙');
+
+      history.unshift({ reels: result.slice(0), bet: paidBet, win: win });
+      if (history.length > MAX_HISTORY) history.pop();
+
+      if (win > paidBet) toast('🎉 Три в ряд! +' + win + ' 🪙');
+      else if (!win) toast('Пусто');
+
+      render();
+      setResult(lines);
+
+      if (currentBalance() < MIN_BET) {
+        broke = true;
+        setStatus('💸 Монеты кончились. В играх без ставок их можно отыграть.');
+        render();
+        return;
+      }
+      setStatus('Крути ещё — ставка ' + paidBet + ' 🪙.');
+      render();
+    }
+
+    buildShell();
+    renderReels();
+    setStatus('Выбери ставку и крути барабаны.');
+    render();
+
+    return {
+      destroy: function () {
+        clearTimers();
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  /* ------------------------------------------------------------------ регистрация */
+
+  var SlotsGame = {
+    key: 'slots',
+    emoji: '🎰',
+    title: 'Слоты',
+    description: 'Три барабана, выплаты до x25',
+    rules: RULES,
+    mount: mount,
+    symbols: SYMBOLS,
+    bets: BETS,
+    minBet: MIN_BET,
+    spin: spin,
+    prize: prize,
+    payoutTable: payoutTable
+  };
+
+  window.Games = window.Games || {};
+  window.Games.slots = SlotsGame;
+})();
+
+</script>
+  <script>
+/* 🧠 Память — найди все пары.
+ *
+ * Классический скрипт: без import/export, без зависимостей, работает по file://.
+ * Регистрируется как window.Games.memory и монтируется в переданный root.
+ */
+(function () {
+  'use strict';
+
+  var EMOJI = ['🍎', '🍌', '🍇', '🍒', '🍓', '🍉', '🍋', '🥝'];
+  var PAIRS = EMOJI.length;
+
+  var RULES = [
+    'На поле лежат карточки рубашкой вверх.',
+    'Открывай по две: если символы совпали — пара остаётся открытой.',
+    'Цель — собрать все ' + PAIRS + ' пар.',
+    'Чем меньше ходов, тем больше монет.'
+  ].join('\n');
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  function call(fn, arg) {
+    if (typeof fn === 'function') {
+      try { return fn(arg); } catch (err) { return undefined; }
+    }
+    return undefined;
+  }
+
+  function shuffled(list) {
+    var arr = list.slice();
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  function mount(root, api) {
+    api = api || {};
+    root = root || document.body;
+    root.innerHTML = '';
+
+    var deck = [];
+    var first = null;
+    var second = null;
+    var lock = false;
+    var moves = 0;
+    var found = 0;
+    var over = false;
+    var timer = null;
+
+    var counterEl, statusEl, grid;
+
+    function buildShell() {
+      root.appendChild(el('div', 'gw-title', '🧠 Память'));
+      root.appendChild(el('div', 'gw-desc', 'Открывай по две карточки и запоминай, где что лежит.'));
+
+      var row = el('div', 'gw-row');
+      counterEl = el('span', 'gw-badge', '');
+      row.appendChild(counterEl);
+
+      var newBtn = el('button', 'gw-btn gw-primary', '🔁 Новая игра');
+      newBtn.type = 'button';
+      newBtn.addEventListener('click', newGame);
+      row.appendChild(newBtn);
+
+      var back = el('button', 'gw-btn gw-ghost', '↩ В меню');
+      back.type = 'button';
+      back.addEventListener('click', function () { call(api.back); });
+      row.appendChild(back);
+      root.appendChild(row);
+
+      grid = el('div', 'gw-grid gw-mem');
+      root.appendChild(grid);
+
+      statusEl = el('div', 'gw-status', '');
+      root.appendChild(statusEl);
+
+      root.appendChild(el('div', 'gw-desc', RULES));
+    }
+
+    function newGame() {
+      if (timer) { clearTimeout(timer); timer = null; }
+      first = second = null;
+      lock = false;
+      moves = 0;
+      found = 0;
+      over = false;
+      deck = shuffled(EMOJI.concat(EMOJI));
+
+      grid.innerHTML = '';
+      for (var i = 0; i < deck.length; i++) {
+        (function (idx) {
+          var card = el('button', 'gw-cell gw-mem-card', '?');
+          card.type = 'button';
+          card.setAttribute('data-idx', String(idx));
+          card.addEventListener('click', function () { flip(idx, card); });
+          grid.appendChild(card);
+        })(i);
+      }
+      render();
+      statusEl.textContent = 'Найди пару!';
+    }
+
+    function render() {
+      counterEl.textContent = 'Ходы: ' + moves + ' • Найдено: ' + found + '/' + PAIRS;
+    }
+
+    function flip(idx, card) {
+      if (over || lock || card.disabled) return;
+      if (first && first.idx === idx) return;
+
+      card.textContent = deck[idx];
+      card.classList.add('gw-mem-open');
+
+      if (!first) {
+        first = { idx: idx, card: card };
+        return;
+      }
+      second = { idx: idx, card: card };
+      moves += 1;
+
+      if (deck[first.idx] === deck[second.idx]) {
+        found += 1;
+        first.card.classList.add('gw-ok');
+        second.card.classList.add('gw-ok');
+        first.card.disabled = true;
+        second.card.disabled = true;
+        first = second = null;
+        render();
+        if (found === PAIRS) finishWin();
+        return;
+      }
+
+      lock = true;
+      var a = first;
+      var b = second;
+      render();
+      timer = setTimeout(function () {
+        hide(a.card);
+        hide(b.card);
+        first = second = null;
+        lock = false;
+        timer = null;
+      }, 750);
+    }
+
+    function hide(card) {
+      card.textContent = '?';
+      card.classList.remove('gw-mem-open');
+    }
+
+    function finishWin() {
+      over = true;
+      var extra = Math.max(0, moves - PAIRS);
+      var coins = Math.max(15, 60 - extra * 3);
+      var points = Math.max(1, PAIRS * 2 - extra);
+      call(api.reward, { coins: coins, win: true, points: points });
+      statusEl.textContent = '🎉 Все пары собраны за ' + moves + ' ходов! Награда: ' + coins + ' 🪙';
+      call(api.toast, '🎉 +' + coins + ' 🪙');
+    }
+
+    buildShell();
+    newGame();
+
+    return {
+      destroy: function () {
+        if (timer) { clearTimeout(timer); timer = null; }
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  window.Games = window.Games || {};
+  window.Games.memory = {
+    key: 'memory',
+    emoji: '🧠',
+    title: 'Память',
+    description: 'Найди все пары за минимум ходов',
+    rules: RULES,
+    mount: mount
+  };
+})();
+
+</script>
+  <script>
+/* 🧩 2048 — соединяй одинаковые плитки, чтобы набрать 2048.
+ *
+ * Классический скрипт: без import/export, без зависимостей, работает по file://.
+ * Регистрируется как window.Games.g2048 и монтируется в переданный root.
+ */
+(function () {
+  'use strict';
+
+  var SIZE = 4;
+  var WIN = 2048;
+
+  var RULES = [
+    'Стрелками (или W A S D) двигай плитки.',
+    'Две одинаковые плитки при движении объединяются в одну с удвоенным числом.',
+    'После каждого хода появляется новая плитка 2 или 4.',
+    'Цель — собрать плитку ' + WIN + '. Ходов больше нет — партия окончена.'
+  ].join('\n');
+
+  var KEYMAP = {
+    ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
+    a: 'left', d: 'right', w: 'up', s: 'down',
+    'ф': 'left', 'в': 'right', 'ц': 'up', 'ы': 'down'
+  };
+
+  var TILE_COLORS = {
+    2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563', 32: '#f67c5f',
+    64: '#f65e3b', 128: '#edcf72', 256: '#edcc61', 512: '#edc850',
+    1024: '#edc53f', 2048: '#edc22e'
+  };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  function call(fn, arg) {
+    if (typeof fn === 'function') {
+      try { return fn(arg); } catch (err) { return undefined; }
+    }
+    return undefined;
+  }
+
+  function mount(root, api) {
+    api = api || {};
+    root = root || document.body;
+    root.innerHTML = '';
+
+    var board = [];
+    var score = 0;
+    var won = false;
+    var over = false;
+
+    var scoreEl, statusEl, grid;
+
+    function reset() {
+      board = [];
+      for (var i = 0; i < SIZE * SIZE; i++) board.push(0);
+      score = 0;
+      won = false;
+      over = false;
+      addRandom();
+      addRandom();
+      render();
+      statusEl.textContent = 'Собирай плитки одинакового номинала.';
+    }
+
+    function emptyCells() {
+      var out = [];
+      for (var i = 0; i < board.length; i++) if (board[i] === 0) out.push(i);
+      return out;
+    }
+
+    function addRandom() {
+      var cells = emptyCells();
+      if (!cells.length) return;
+      var idx = cells[Math.floor(Math.random() * cells.length)];
+      board[idx] = Math.random() < 0.9 ? 2 : 4;
+    }
+
+    function maxTile() {
+      var m = 0;
+      for (var i = 0; i < board.length; i++) if (board[i] > m) m = board[i];
+      return m;
+    }
+
+    function lineIndex(dir, i, j) {
+      if (dir === 'left') return i * SIZE + j;
+      if (dir === 'right') return i * SIZE + (SIZE - 1 - j);
+      if (dir === 'up') return j * SIZE + i;
+      return (SIZE - 1 - j) * SIZE + i; // down
+    }
+
+    function squeeze(line) {
+      var vals = [];
+      for (var i = 0; i < line.length; i++) if (line[i] !== 0) vals.push(line[i]);
+      var out = [];
+      var gained = 0;
+      for (var k = 0; k < vals.length; k++) {
+        if (k + 1 < vals.length && vals[k] === vals[k + 1]) {
+          out.push(vals[k] * 2);
+          gained += vals[k] * 2;
+          k += 1;
+        } else {
+          out.push(vals[k]);
+        }
+      }
+      while (out.length < SIZE) out.push(0);
+      return { line: out, gained: gained };
+    }
+
+    function move(dir) {
+      var changed = false;
+      var gained = 0;
+      for (var i = 0; i < SIZE; i++) {
+        var line = [];
+        for (var j = 0; j < SIZE; j++) line.push(board[lineIndex(dir, i, j)]);
+        var res = squeeze(line);
+        gained += res.gained;
+        for (var j2 = 0; j2 < SIZE; j2++) {
+          if (line[j2] !== res.line[j2]) changed = true;
+          board[lineIndex(dir, i, j2)] = res.line[j2];
+        }
+      }
+      if (changed) score += gained;
+      return changed;
+    }
+
+    function canMove() {
+      if (emptyCells().length) return true;
+      for (var r = 0; r < SIZE; r++) {
+        for (var c = 0; c < SIZE; c++) {
+          var v = board[r * SIZE + c];
+          if (c + 1 < SIZE && board[r * SIZE + c + 1] === v) return true;
+          if (r + 1 < SIZE && board[(r + 1) * SIZE + c] === v) return true;
+        }
+      }
+      return false;
+    }
+
+    function step(dir) {
+      if (over) return;
+      if (!move(dir)) return;
+      addRandom();
+      render();
+      if (!won && maxTile() >= WIN) {
+        won = true;
+        statusEl.textContent = '🎉 Плитка ' + WIN + ' собрана! Можно продолжать.';
+        call(api.toast, '🎉 ' + WIN + '! Можно играть дальше');
+      }
+      if (!canMove()) finish();
+    }
+
+    function finish() {
+      over = true;
+      var coins = Math.max(5, Math.round(score / 40));
+      var points = Math.max(0, Math.round(score / 10));
+      call(api.reward, { coins: coins, win: won, lose: !won, points: points });
+      statusEl.textContent = (won ? '🏆 Ходов больше нет. Итог: ' : '💀 Ходов больше нет. Итог: ') +
+        score + ' очков. Награда: ' + coins + ' 🪙';
+      call(api.toast, (won ? '🏆 +' : '💀 +') + coins + ' 🪙');
+    }
+
+    function render() {
+      scoreEl.textContent = 'Очки: ' + score;
+      grid.innerHTML = '';
+      for (var i = 0; i < board.length; i++) {
+        var v = board[i];
+        var cell = el('button', 'gw-cell gw-2048-tile', v ? String(v) : '');
+        cell.type = 'button';
+        cell.disabled = true;
+        cell.style.background = v ? (TILE_COLORS[v] || '#3c3a32') : '#2b3d4d';
+        cell.style.color = v && v > 4 ? '#f9f6f2' : (v ? '#776e65' : 'transparent');
+        grid.appendChild(cell);
+      }
+    }
+
+    function onKey(event) {
+      var key = event.key;
+      var dir = KEYMAP[key] || KEYMAP[String(key).toLowerCase()];
+      if (!dir) return;
+      event.preventDefault();
+      step(dir);
+    }
+
+    function buildShell() {
+      root.appendChild(el('div', 'gw-title', '🧩 2048'));
+      root.appendChild(el('div', 'gw-desc', 'Сдвигай плитки и объединяй одинаковые числа.'));
+
+      var row = el('div', 'gw-row');
+      scoreEl = el('span', 'gw-badge', 'Очки: 0');
+      row.appendChild(scoreEl);
+
+      var newBtn = el('button', 'gw-btn gw-primary', '🔁 Новая игра');
+      newBtn.type = 'button';
+      newBtn.addEventListener('click', reset);
+      row.appendChild(newBtn);
+
+      var back = el('button', 'gw-btn gw-ghost', '↩ В меню');
+      back.type = 'button';
+      back.addEventListener('click', function () { call(api.back); });
+      row.appendChild(back);
+      root.appendChild(row);
+
+      grid = el('div', 'gw-grid gw-2048');
+      root.appendChild(grid);
+
+      var pad = el('div', 'gw-row');
+      [['↑', 'up'], ['←', 'left'], ['↓', 'down'], ['→', 'right']].forEach(function (pair) {
+        var b = el('button', 'gw-btn', pair[0]);
+        b.type = 'button';
+        b.setAttribute('aria-label', pair[1]);
+        b.addEventListener('click', function () { step(pair[1]); });
+        pad.appendChild(b);
+      });
+      root.appendChild(pad);
+
+      statusEl = el('div', 'gw-status', '');
+      root.appendChild(statusEl);
+
+      root.appendChild(el('div', 'gw-desc', RULES));
+    }
+
+    buildShell();
+    reset();
+    document.addEventListener('keydown', onKey);
+
+    return {
+      destroy: function () {
+        document.removeEventListener('keydown', onKey);
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  window.Games = window.Games || {};
+  window.Games.g2048 = {
+    key: 'g2048',
+    emoji: '🧩',
+    title: '2048',
+    description: 'Соединяй плитки и доберись до 2048',
+    rules: RULES,
+    mount: mount
+  };
+})();
+
+</script>
+  <script>
+/* 💣 Сапёр — открой все безопасные клетки, не попав на мину.
+ *
+ * Классический скрипт: без import/export, без зависимостей, работает по file://.
+ * Регистрируется как window.Games.minesweeper и монтируется в переданный root.
+ */
+(function () {
+  'use strict';
+
+  var SIZE = 9;
+  var MINES = 10;
+
+  var RULES = [
+    'Поле ' + SIZE + '×' + SIZE + ', мин: ' + MINES + '.',
+    'Левый клик — открыть клетку, правый — поставить флажок 🚩.',
+    'Цифра показывает, сколько мин рядом.',
+    'Первый клик всегда безопасен.',
+    'Открой все клетки без мин — победа. Попадёшь на мину — проигрыш.'
+  ].join('\n');
+
+  var NUM_COLORS = { 1: '#6ab3f3', 2: '#7fd39a', 3: '#f08b8b', 4: '#c58af9', 5: '#e0a33c', 6: '#4fd1c5', 7: '#e9eef3', 8: '#8b9bab' };
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  function call(fn, arg) {
+    if (typeof fn === 'function') {
+      try { return fn(arg); } catch (err) { return undefined; }
+    }
+    return undefined;
+  }
+
+  function mount(root, api) {
+    api = api || {};
+    root = root || document.body;
+    root.innerHTML = '';
+
+    var cells = [];
+    var gridEl, statusEl, mineEl;
+    var placed = false;
+    var over = false;
+    var openedSafe = 0;
+    var flags = 0;
+
+    function neighbors(idx) {
+      var r = Math.floor(idx / SIZE);
+      var c = idx % SIZE;
+      var out = [];
+      for (var dr = -1; dr <= 1; dr++) {
+        for (var dc = -1; dc <= 1; dc++) {
+          if (!dr && !dc) continue;
+          var nr = r + dr;
+          var nc = c + dc;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE) out.push(nr * SIZE + nc);
+        }
+      }
+      return out;
+    }
+
+    function reset() {
+      cells = [];
+      placed = false;
+      over = false;
+      openedSafe = 0;
+      flags = 0;
+      for (var i = 0; i < SIZE * SIZE; i++) {
+        cells.push({ mine: false, revealed: false, flagged: false, adj: 0 });
+      }
+      render();
+      statusEl.textContent = 'Первый клик — безопасный. Удачи!';
+    }
+
+    function placeMines(safeIdx) {
+      var forbidden = {};
+      forbidden[safeIdx] = true;
+      neighbors(safeIdx).forEach(function (n) { forbidden[n] = true; });
+      var pool = [];
+      for (var i = 0; i < cells.length; i++) if (!forbidden[i]) pool.push(i);
+      for (var m = pool.length - 1; m > 0; m--) {
+        var j = Math.floor(Math.random() * (m + 1));
+        var t = pool[m]; pool[m] = pool[j]; pool[j] = t;
+      }
+      for (var k = 0; k < MINES && k < pool.length; k++) cells[pool[k]].mine = true;
+      for (var idx = 0; idx < cells.length; idx++) {
+        var adj = 0;
+        neighbors(idx).forEach(function (n) { if (cells[n].mine) adj += 1; });
+        cells[idx].adj = adj;
+      }
+      placed = true;
+    }
+
+    function open(idx) {
+      if (over) return;
+      var cell = cells[idx];
+      if (cell.revealed || cell.flagged) return;
+      if (!placed) placeMines(idx);
+
+      if (cell.mine) {
+        cell.revealed = true;
+        finish(false);
+        return;
+      }
+
+      var stack = [idx];
+      while (stack.length) {
+        var cur = stack.pop();
+        var c = cells[cur];
+        if (c.revealed || c.flagged) continue;
+        c.revealed = true;
+        openedSafe += 1;
+        if (c.adj === 0) {
+          neighbors(cur).forEach(function (n) {
+            if (!cells[n].revealed && !cells[n].flagged) stack.push(n);
+          });
+        }
+      }
+      render();
+      if (openedSafe === cells.length - MINES) finish(true);
+    }
+
+    function toggleFlag(idx) {
+      if (over) return;
+      var cell = cells[idx];
+      if (cell.revealed) return;
+      cell.flagged = !cell.flagged;
+      flags += cell.flagged ? 1 : -1;
+      render();
+    }
+
+    function finish(win) {
+      over = true;
+      var coins = win ? 40 : 0;
+      call(api.reward, win ? { coins: coins, win: true, points: 40 } : { lose: true });
+      if (!win) {
+        for (var i = 0; i < cells.length; i++) if (cells[i].mine) cells[i].revealed = true;
+      }
+      render();
+      statusEl.textContent = win
+        ? '🎉 Поле очищено! Награда: ' + coins + ' 🪙'
+        : '💥 Взрыв! Попалась мина. Попробуй ещё раз.';
+      if (win) call(api.toast, '🎉 +' + coins + ' 🪙');
+    }
+
+    function render() {
+      mineEl.textContent = '🚩 ' + flags + ' / ' + MINES;
+      gridEl.innerHTML = '';
+      for (var i = 0; i < cells.length; i++) {
+        (function (idx) {
+          var c = cells[idx];
+          var cell = el('button', 'gw-cell gw-ms-cell');
+          cell.type = 'button';
+          if (c.revealed) {
+            cell.classList.add('gw-ms-open');
+            if (c.mine) {
+              cell.classList.add('gw-bad');
+              cell.textContent = '💣';
+            } else if (c.adj > 0) {
+              cell.textContent = String(c.adj);
+              cell.style.color = NUM_COLORS[c.adj] || '#e9eef3';
+            }
+          } else if (c.flagged) {
+            cell.classList.add('gw-ok');
+            cell.textContent = '🚩';
+          }
+          cell.addEventListener('click', function () { open(idx); });
+          cell.addEventListener('contextmenu', function (event) {
+            event.preventDefault();
+            toggleFlag(idx);
+          });
+          gridEl.appendChild(cell);
+        })(i);
+      }
+    }
+
+    function buildShell() {
+      root.appendChild(el('div', 'gw-title', '💣 Сапёр'));
+      root.appendChild(el('div', 'gw-desc', 'Открой все безопасные клетки, не попав на мину.'));
+
+      var row = el('div', 'gw-row');
+      mineEl = el('span', 'gw-badge', '🚩 0 / ' + MINES);
+      row.appendChild(mineEl);
+
+      var newBtn = el('button', 'gw-btn gw-primary', '🔁 Новое поле');
+      newBtn.type = 'button';
+      newBtn.addEventListener('click', reset);
+      row.appendChild(newBtn);
+
+      var back = el('button', 'gw-btn gw-ghost', '↩ В меню');
+      back.type = 'button';
+      back.addEventListener('click', function () { call(api.back); });
+      row.appendChild(back);
+      root.appendChild(row);
+
+      gridEl = el('div', 'gw-grid gw-ms');
+      gridEl.addEventListener('contextmenu', function (event) { event.preventDefault(); });
+      root.appendChild(gridEl);
+
+      statusEl = el('div', 'gw-status', '');
+      root.appendChild(statusEl);
+
+      root.appendChild(el('div', 'gw-desc', RULES));
+    }
+
+    buildShell();
+    reset();
+
+    return {
+      destroy: function () {
+        root.innerHTML = '';
+      }
+    };
+  }
+
+  window.Games = window.Games || {};
+  window.Games.minesweeper = {
+    key: 'minesweeper',
+    emoji: '💣',
+    title: 'Сапёр',
+    description: '9×9, 10 мин — открой безопасные клетки',
+    rules: RULES,
+    mount: mount
+  };
+})();
+
+</script>
+  <script>
+/**
+ * Каркас веб-версии «Игрового зала»: меню, монеты, статистика, рейтинг, справка.
+ * Сами игры лежат в отдельных файлах и регистрируются в window.Games.
+ */
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'games-web-state-v1';
+  var START_COINS = 100;
+
+  var state = loadState();
+  var currentGame = null;      // { def, instance }
+  var viewEl = document.getElementById('gw-view');
+  var balanceEl = document.getElementById('gw-balance');
+  var playerEl = document.getElementById('gw-player');
+  var toastsEl = document.getElementById('gw-toasts');
+
+  // ---------- хранилище ----------
+
+  function loadState() {
+    var raw = null;
+    try { raw = localStorage.getItem(STORE_KEY); } catch (e) { raw = null; }
+    var parsed = null;
+    if (raw) { try { parsed = JSON.parse(raw); } catch (e) { parsed = null; } }
+    if (!parsed || typeof parsed !== 'object' || !parsed.players) {
+      parsed = { current: 'Игрок', players: {} };
+    }
+    if (!parsed.current || !parsed.players[parsed.current]) {
+      parsed.current = Object.keys(parsed.players)[0] || 'Игрок';
+      parsed.players[parsed.current] = parsed.players[parsed.current] || newPlayer();
+    }
+    return parsed;
+  }
+
+  function newPlayer() {
+    return { coins: START_COINS, created: Date.now(), stats: {} };
+  }
+
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* приватный режим */ }
+  }
+
+  function player() {
+    var p = state.players[state.current];
+    if (!p) { p = newPlayer(); state.players[state.current] = p; }
+    if (!p.stats) p.stats = {};
+    return p;
+  }
+
+  function statFor(key) {
+    var p = player();
+    if (!p.stats[key]) p.stats[key] = { played: 0, wins: 0, losses: 0, points: 0, best: 0 };
+    return p.stats[key];
+  }
+
+  // ---------- утилиты ----------
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+  function toast(text) {
+    var t = el('div', 'gw-toast', text);
+    toastsEl.appendChild(t);
+    setTimeout(function () {
+      t.style.opacity = '0';
+      t.style.transition = 'opacity .25s ease';
+      setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 280);
+    }, 2600);
+  }
+
+  function updateChrome() {
+    balanceEl.textContent = '🪙 ' + player().coins;
+    if (document.activeElement !== playerEl) playerEl.value = state.current;
+  }
+
+  // ---------- игры ----------
+
+  function gameList() {
+    var reg = window.Games || {};
+    return Object.keys(reg)
+      .map(function (k) { return reg[k]; })
+      .filter(function (g) { return g && typeof g.mount === 'function'; })
+      .sort(function (a, b) { return String(a.title).localeCompare(String(b.title), 'ru'); });
+  }
+
+  function api(key) {
+    return {
+      balance: function () { return player().coins; },
+      spend: function (n) {
+        n = Math.max(0, Math.round(n || 0));
+        var p = player();
+        if (p.coins < n) { toast('Недостаточно монет: нужно ' + n + ' 🪙'); return false; }
+        p.coins -= n; save(); updateChrome();
+        return true;
+      },
+      reward: function (opts) {
+        opts = opts || {};
+        var p = player();
+        var st = statFor(key);
+        var coins = Math.round(opts.coins || 0);
+        var points = Math.round(opts.points || 0);
+        if (coins) p.coins += coins;
+        if (opts.win || opts.lose) st.played += 1;
+        if (opts.win) { st.wins += 1; st.points += points; }
+        if (opts.lose) { st.losses += 1; }
+        if (points > st.best) st.best = points;
+        save(); updateChrome();
+        if (coins) toast((coins > 0 ? '+' : '') + coins + ' 🪙');
+      },
+      toast: toast,
+      back: showMenu
+    };
+  }
+
+  function openGame(def) {
+    destroyGame();
+    clear(viewEl);
+
+    var head = el('div', 'gw-row');
+    var title = el('h2', 'gw-title', (def.emoji ? def.emoji + ' ' : '') + def.title);
+    var back = el('button', 'gw-btn gw-ghost gw-right', '↩ В меню');
+    back.addEventListener('click', showMenu);
+    head.appendChild(title);
+    head.appendChild(back);
+
+    if (def.description) head.appendChild(el('span', 'gw-badge', def.description));
+    viewEl.appendChild(head);
+
+    var root = el('div', 'gw-panel');
+    viewEl.appendChild(root);
+
+    var instance = null;
+    try {
+      instance = def.mount(root, api(def.key || def.title));
+    } catch (err) {
+      root.appendChild(el('p', 'gw-desc', 'Игра не запустилась: ' + (err && err.message ? err.message : err)));
+      if (window.console) console.error(err);
+    }
+    currentGame = { def: def, instance: instance };
+    updateChrome();
+  }
+
+  function destroyGame() {
+    if (currentGame && currentGame.instance && typeof currentGame.instance.destroy === 'function') {
+      try { currentGame.instance.destroy(); } catch (e) { /* не мешаем выходу */ }
+    }
+    currentGame = null;
+  }
+
+  // ---------- виды ----------
+
+  function showMenu() {
+    destroyGame();
+    clear(viewEl);
+    viewEl.appendChild(el('h2', 'gw-title', 'Игры'));
+    viewEl.appendChild(el('p', 'gw-desc', 'Выберите игру. Монеты за победы, статистика и рейтинг — сверху.'));
+
+    var list = gameList();
+    if (!list.length) {
+      viewEl.appendChild(el('p', 'gw-desc', 'Файлы игр не загрузились — проверьте, что рядом лежат *.js игры.'));
+      return;
+    }
+    var menu = el('div', 'gw-menu');
+    list.forEach(function (def) {
+      var card = el('button', 'gw-card');
+      card.type = 'button';
+      card.appendChild(el('div', 'gw-card-emoji', def.emoji || '🎲'));
+      card.appendChild(el('div', 'gw-card-title', def.title || def.key));
+      card.appendChild(el('div', 'gw-card-desc', def.description || ''));
+      card.addEventListener('click', function () { openGame(def); });
+      menu.appendChild(card);
+    });
+    viewEl.appendChild(menu);
+    updateChrome();
+  }
+
+  function showStats() {
+    destroyGame();
+    clear(viewEl);
+    var p = player();
+    viewEl.appendChild(el('h2', 'gw-title', '📊 Статистика — ' + state.current));
+
+    var panel = el('div', 'gw-panel');
+    panel.appendChild(el('p', 'gw-desc', 'Монет: ' + p.coins + ' 🪙'));
+
+    var table = el('table', 'gw-table');
+    var thead = el('thead');
+    var hr = el('tr');
+    ['Игра', 'Партий', 'Побед', 'Поражений', 'Очков', 'Лучший результат'].forEach(function (h) {
+      hr.appendChild(el('th', null, h));
+    });
+    thead.appendChild(hr);
+    table.appendChild(thead);
+
+    var tbody = el('tbody');
+    var st = p.stats || {};
+    var keys = Object.keys(st);
+    if (!keys.length) {
+      var tr = el('tr');
+      var td = el('td', null, 'Пока ничего не сыграно.');
+      td.colSpan = 6;
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+    keys.forEach(function (k) {
+      var s = st[k];
+      var tr = el('tr');
+      tr.appendChild(el('td', null, k));
+      tr.appendChild(el('td', 'gw-num', s.played));
+      tr.appendChild(el('td', 'gw-num', s.wins));
+      tr.appendChild(el('td', 'gw-num', s.losses));
+      tr.appendChild(el('td', 'gw-num', s.points));
+      tr.appendChild(el('td', 'gw-num', s.best));
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    panel.appendChild(table);
+
+    var row = el('div', 'gw-row');
+    var rename = el('button', 'gw-btn', '✏️ Переименовать игрока');
+    rename.addEventListener('click', function () {
+      var name = (window.prompt('Имя игрока:', state.current) || '').trim().slice(0, 20);
+      if (!name || name === state.current) return;
+      if (state.players[name]) { state.current = name; }
+      else {
+        var old = player();
+        state.players[name] = old;      // переносим прогресс на новое имя
+        delete state.players[state.current];
+        state.current = name;
+      }
+      save(); updateChrome(); showStats();
+    });
+
+    var reset = el('button', 'gw-btn', '🧹 Сбросить прогресс');
+    reset.addEventListener('click', function () {
+      if (!window.confirm('Обнулить монеты и статистику игрока «' + state.current + '»?')) return;
+      state.players[state.current] = newPlayer();
+      save(); updateChrome(); showStats();
+      toast('Прогресс сброшен, снова ' + START_COINS + ' 🪙');
+    });
+
+    row.appendChild(rename);
+    row.appendChild(reset);
+    panel.appendChild(row);
+    viewEl.appendChild(panel);
+    updateChrome();
+  }
+
+  function showTop() {
+    destroyGame();
+    clear(viewEl);
+    viewEl.appendChild(el('h2', 'gw-title', '🏆 Топ игроков'));
+    viewEl.appendChild(el('p', 'gw-desc', 'Локальный рейтинг: все игроки, созданные в этом браузере.'));
+
+    var rows = Object.keys(state.players).map(function (name) {
+      var p = state.players[name];
+      var points = 0, wins = 0, played = 0;
+      Object.keys(p.stats || {}).forEach(function (k) {
+        points += p.stats[k].points || 0;
+        wins += p.stats[k].wins || 0;
+        played += p.stats[k].played || 0;
+      });
+      return { name: name, coins: p.coins, points: points, wins: wins, played: played };
+    }).sort(function (a, b) { return b.points - a.points || b.coins - a.coins; });
+
+    var panel = el('div', 'gw-panel');
+    var table = el('table', 'gw-table');
+    var hr = el('tr');
+    ['#', 'Игрок', '🪙', 'Очки', 'Побед', 'Партий'].forEach(function (h) { hr.appendChild(el('th', null, h)); });
+    table.appendChild(hr);
+    rows.forEach(function (r, i) {
+      var tr = el('tr');
+      tr.appendChild(el('td', null, i + 1));
+      tr.appendChild(el('td', null, r.name + (r.name === state.current ? ' (вы)' : '')));
+      tr.appendChild(el('td', 'gw-num', r.coins));
+      tr.appendChild(el('td', 'gw-num', r.points));
+      tr.appendChild(el('td', 'gw-num', r.wins));
+      tr.appendChild(el('td', 'gw-num', r.played));
+      table.appendChild(tr);
+    });
+    panel.appendChild(table);
+
+    var row = el('div', 'gw-row');
+    var add = el('button', 'gw-btn gw-primary', '➕ Новый игрок');
+    add.addEventListener('click', function () {
+      var name = (window.prompt('Имя нового игрока:', 'Игрок ' + (Object.keys(state.players).length + 1)) || '').trim().slice(0, 20);
+      if (!name) return;
+      if (!state.players[name]) state.players[name] = newPlayer();
+      state.current = name;
+      save(); updateChrome(); showTop();
+      toast('Игрок «' + name + '» создан, на счету ' + START_COINS + ' 🪙');
+    });
+    row.appendChild(add);
+    panel.appendChild(row);
+
+    viewEl.appendChild(panel);
+    updateChrome();
+  }
+
+  function showHelp() {
+    destroyGame();
+    clear(viewEl);
+    viewEl.appendChild(el('h2', 'gw-title', '❓ Справка'));
+
+    var list = gameList();
+    list.forEach(function (def) {
+      var panel = el('div', 'gw-panel');
+      panel.appendChild(el('div', 'gw-title', (def.emoji ? def.emoji + ' ' : '') + def.title));
+      if (def.rules) {
+        var ul = el('ul', 'gw-rules');
+        String(def.rules).split('\n').forEach(function (line) {
+          line = line.trim();
+          if (!line) return;
+          ul.appendChild(el('li', null, line.replace(/^[-•*]\s*/, '')));
+        });
+        panel.appendChild(ul);
+      } else if (def.description) {
+        panel.appendChild(el('p', 'gw-desc', def.description));
+      }
+      viewEl.appendChild(panel);
+    });
+
+    var common = el('div', 'gw-panel');
+    common.appendChild(el('div', 'gw-title', 'Общее'));
+    var ul = el('ul', 'gw-rules');
+    [
+      'Новый игрок получает ' + START_COINS + ' 🪙.',
+      'Монеты начисляются за победы и тратятся на ставки и подсказки.',
+      'Статистика — по кнопке «📊 Статистика», рейтинг — «🏆 Топ».',
+      'Прогресс хранится в localStorage браузера и никуда не отправляется.'
+    ].forEach(function (t) { ul.appendChild(el('li', null, t)); });
+    common.appendChild(ul);
+    viewEl.appendChild(common);
+    updateChrome();
+  }
+
+  // ---------- навигация ----------
+
+  document.querySelectorAll('[data-nav]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var view = btn.getAttribute('data-nav');
+      if (view === 'menu') showMenu();
+      else if (view === 'stats') showStats();
+      else if (view === 'top') showTop();
+      else if (view === 'help') showHelp();
+    });
+  });
+
+  playerEl.addEventListener('change', function () {
+    var name = (playerEl.value || '').trim().slice(0, 20);
+    if (!name) { playerEl.value = state.current; return; }
+    if (name === state.current) return;
+    if (!state.players[name]) state.players[name] = newPlayer();
+    state.current = name;
+    save(); updateChrome(); showMenu();
+    toast('Игрок: ' + name);
+  });
+
+  updateChrome();
+  showMenu();
+})();
+
+</script>
+</body>
+</html>
